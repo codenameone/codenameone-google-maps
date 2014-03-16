@@ -1,0 +1,201 @@
+/*
+ * Copyright (c) 2014, Codename One LTD. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#import "com_codename1_googlemaps_InternalNativeMapsImpl.h"
+#include "com_codename1_googlemaps_MapContainer.h"
+
+@implementation com_codename1_googlemaps_InternalNativeMapsImpl
+
+-(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5{
+    __block GMSMarker *marker = nil;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        marker = [[GMSMarker alloc] init];
+        marker.position = CLLocationCoordinate2DMake(param1, param2);
+        marker.title = param3;
+        marker.snippet = param4;
+        if(param != nil) {
+            UIImage* img = [UIImage imageWithData:param];
+            marker.icon = img;
+        }
+        marker.map = mapView;
+        marker.tappable = YES;
+        if(param) {
+            marker.userData = @"";
+        } else {
+            marker.userData = nil;
+        }
+        
+        [marker retain];
+        [pool release];
+    });
+    
+    return marker;
+}
+
+-(void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position {
+    com_codename1_googlemaps_MapContainer_fireMapChangeEvent___int_int_double_double(mapId, (int)mapView.camera.zoom, mapView.camera.target.latitude, mapView.camera.target.longitude);
+}
+
+-(BOOL)mapView:(GMSMapView *)mapView didTapMarker:(GMSMarker *)marker {
+    if(marker.userData != nil) {
+        com_codename1_googlemaps_MapContainer_fireMarkerEvent___int_long(mapId, marker);
+        return YES;
+    }
+    return NO;
+}
+
+-(long long)beginPath{
+    GMSMutablePath *path = [GMSMutablePath path];
+    return path;
+}
+
+-(void)setPosition:(double)param param1:(double)param1{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:param
+                                                                longitude:param1
+                                                                     zoom:mapView.camera.zoom];
+        mapView.camera = camera;
+        [mapView retain];
+        [pool release];
+    });
+}
+
+-(float)getZoom{
+    return mapView.camera.zoom;
+}
+
+-(void)setZoom:(double)param param1:(double)param1 param2:(float)param2{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:param
+                                                                longitude:param1
+                                                                     zoom:param2];
+        mapView.camera = camera;
+        [mapView retain];
+        [pool release];
+    });
+}
+
+-(void)addToPath:(long long)param param1:(double)param1 param2:(double)param2{
+    GMSMutablePath *path = (GMSMutablePath*) param;
+    [path addLatitude:param1 longitude:param2];
+}
+
+-(void)removeAllMarkers{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [mapView clear];
+    });
+}
+
+-(int)getMinZoom{
+    return (int)mapView.minZoom;
+}
+
+-(void)removeMapElement:(long long)param{
+    NSObject* n = (NSObject*)param;
+    if([n isKindOfClass:[GMSMarker class]]) {
+        GMSMarker* marker = (GMSMarker*)n;
+        marker.map = nil;
+        return;
+    }
+    
+    GMSPolyline *polyline = (GMSPolyline *)param;
+    polyline.map = nil;
+}
+
+-(double)getLatitude{
+    __block double lat = 0;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        lat = mapView.camera.target.latitude;
+    });
+    return lat;
+}
+
+-(double)getLongitude{
+    __block double lon = 0;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        lon = mapView.camera.target.longitude;
+    });
+    return lon;
+}
+
+-(void)setMapType:(int)param{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        switch(param) {
+            case 1:
+                mapView.mapType = kGMSTypeSatellite;
+                return;
+            case 2:
+                mapView.mapType = kGMSTypeHybrid;
+                return;
+        }
+        mapView.mapType = kGMSTypeNormal;
+    });
+}
+
+-(void*)createNativeMap:(int)param{
+    mapId = param;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:-33.86
+                                                                longitude:151.20
+                                                                     zoom:6];
+        mapView = [GMSMapView mapWithFrame:CGRectZero camera:camera];
+        mapView.myLocationEnabled = YES;
+        mapView.delegate = self;
+        [mapView retain];
+        [pool release];
+    });
+    return mapView;
+}
+
+-(int)getMapType{
+    GMSMapViewType t = mapView.mapType;
+    if(t == kGMSTypeSatellite) {
+        return 1;
+    }
+    if(t == kGMSTypeHybrid) {
+        return 2;
+    }
+    if(t == kGMSTypeTerrain) {
+        return 1;
+    }
+    return 3;
+}
+
+-(int)getMaxZoom{
+    return (int)mapView.maxZoom;
+}
+
+-(long long)finishPath:(long long)param{
+    __block GMSPolyline *polyline = nil;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        GMSMutablePath *path = (GMSMutablePath*)param;
+        polyline = [GMSPolyline polylineWithPath:path];
+        polyline.map = mapView;
+    });
+    return polyline;
+}
+
+-(BOOL)isSupported{
+    return YES;
+}
+
+-(void)deinitialize {}
+-(void)initialize {}
+@end
