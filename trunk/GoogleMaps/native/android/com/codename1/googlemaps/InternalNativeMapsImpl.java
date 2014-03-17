@@ -16,6 +16,7 @@
  */
 package com.codename1.googlemaps;
 
+import android.app.Activity;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.GoogleMap;
 import com.codename1.impl.android.AndroidNativeUtil;
@@ -26,6 +27,9 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.Map;
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.os.Bundle;
 import com.codename1.impl.android.AndroidImplementation;
 import com.codename1.impl.android.LifecycleListener;
@@ -33,6 +37,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.MapsInitializer;
 import android.os.Looper;
+import android.view.View;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.Polyline;
 
@@ -59,6 +64,47 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 });
             }
         }
+        AndroidNativeUtil.registerViewRenderer(MapView.class, new AndroidNativeUtil.BitmapViewRenderer() {
+            public Bitmap renderViewOnBitmap(View v, int w, int h) {
+                final MapView mv = (MapView)v;
+                final Bitmap[] finished = new Bitmap[1];
+                AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final int vis = mv.getVisibility();
+                        mv.setVisibility(View.VISIBLE);
+                        mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
+                            public void onSnapshotReady(Bitmap snapshot) {
+                                /*mv.setDrawingCacheEnabled(true);
+                                Bitmap backBitmap = mv.getDrawingCache();
+                                Bitmap bmOverlay = Bitmap.createBitmap(backBitmap.getWidth(), backBitmap.getHeight(),backBitmap.getConfig());
+                                Canvas canvas = new Canvas(bmOverlay);
+                                canvas.drawBitmap(snapshot, new Matrix(), null);
+                                canvas.drawBitmap(backBitmap, 0, 0, null);*/
+                                mv.setVisibility(vis);
+                                synchronized(finished) {
+                                    finished[0] = snapshot;//bmOverlay;
+                                    finished.notify();
+                                }
+                            }
+                        });
+                    }
+                });
+                com.codename1.ui.Display.getInstance().invokeAndBlock(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized(finished) {
+                            while(finished[0] == null) {
+                                try {
+                                    finished.wait(100);
+                                } catch(InterruptedException er) {}
+                            }
+                        }
+                    }
+                });
+                return finished[0];
+            }
+        });
     }
 
     private static void initMaps() {
@@ -185,27 +231,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             }
         });
     }
-
+    
     public android.view.View createNativeMap(int mapId) {
         this.mapId = mapId;
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 try {
-                    view = new MapView(AndroidNativeUtil.getActivity()) {
-                        public void invalidate(android.graphics.Rect rect) {
-                            super.invalidate(rect);
-                            MapContainer.mapUpdated(InternalNativeMapsImpl.this.mapId);
-                        }
-                        public void invalidate(int arg0, int arg1, int arg2, int arg3) {
-                            super.invalidate(arg0, arg1, arg2, arg3);
-                            MapContainer.mapUpdated(InternalNativeMapsImpl.this.mapId);
-                        }
-                        
-                        public void invalidate() {
-                            super.invalidate();
-                            MapContainer.mapUpdated(InternalNativeMapsImpl.this.mapId);
-                        }
-                    };
+                    view = new MapView(AndroidNativeUtil.getActivity());
                     view.onCreate(AndroidNativeUtil.getActivationBundle());
                     mapInstance = view.getMap();
                     if(mapInstance == null) {
