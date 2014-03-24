@@ -42,6 +42,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.LatLngBounds;
 import android.graphics.Point;
+import com.google.android.gms.maps.model.CameraPosition;
 
 public class InternalNativeMapsImpl implements LifecycleListener {
     private int mapId;
@@ -282,6 +283,11 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                             }
                             return false;
                         }
+                    });
+                    mapInstance.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+                       public void onCameraChange(CameraPosition position) {
+                           MapContainer.fireMapChangeEvent(InternalNativeMapsImpl.this.mapId, (int)position.zoom, position.target.latitude, position.target.longitude);
+                       }
                     });
                 } catch (Exception e) {
                     System.out.println("Failed to initialize, google play services not installed: " + e);
