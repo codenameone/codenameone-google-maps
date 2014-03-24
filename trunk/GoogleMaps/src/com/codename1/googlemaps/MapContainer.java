@@ -32,6 +32,7 @@ import com.codename1.ui.EncodedImage;
 import com.codename1.ui.PeerComponent;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
+import com.codename1.ui.geom.Point;
 import com.codename1.ui.layouts.BorderLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -370,6 +371,43 @@ public class MapContainer extends Container {
         return new Coord(internalNative.getLatitude(), internalNative.getLongitude());
     }
     
+    /**
+     * Returns the lat/lon coordinate at the given x/y position
+     * @param x the x position in component relative coordinate system
+     * @param y the y position in component relative coordinate system
+     * @return a lat/lon coordinate
+     */
+    public Coord getCoordAtPosition(int x, int y) {
+        if(internalNative == null) {
+            return internalLightweight.getCoordFromPosition(x, y);
+        }
+        internalNative.calcLatLongPosition(x, y);
+        return new Coord(internalNative.getLatitude(), internalNative.getLongitude());
+    }
+    
+    /**
+     * Returns the screen position for the coordinate in component relative position
+     * @param lat the latitude
+     * @param lon the longitude
+     * @return the x/y position in component relative position
+     */
+    public Point getScreenCoordinate(double lat, double lon) {
+        if(internalNative == null) {
+            return internalLightweight.getPointFromCoord(new Coord(lat, lon));
+        }
+        internalNative.calcScreenPosition(lat, lon);
+        return new Point(internalNative.getScreenX(), internalNative.getScreenY());
+    }
+    
+    /**
+     * Returns the location on the screen for the given coordinate
+     * @param c the coordinate
+     * @return the x/y position in component relative position
+     */
+    public Point getScreenCoordinate(Coord c) {
+        return getScreenCoordinate(c.getLatitude(), c.getLongitude());
+    }
+
     static void fireMapChangeEvent(int mapId, final int zoom, final double lat, final double lon) {
         final MapContainer mc = instances.get(mapId);
         if(mc != null) {
