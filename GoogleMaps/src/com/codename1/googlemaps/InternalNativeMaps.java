@@ -46,4 +46,12 @@ public interface InternalNativeMaps extends NativeInterface {
     public float getZoom();
     public void deinitialize();
     public void initialize();
+    
+    public void calcScreenPosition(double lat, double lon);
+    public int getScreenX();
+    public int getScreenY();
+
+    public void calcLatLongPosition(int x, int y);
+    public double getScreenLat();
+    public double getScreenLon();
 }

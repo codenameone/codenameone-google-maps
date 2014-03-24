@@ -40,6 +40,8 @@ import android.os.Looper;
 import android.view.View;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.LatLngBounds;
+import android.graphics.Point;
 
 public class InternalNativeMapsImpl implements LifecycleListener {
     private int mapId;
@@ -51,7 +53,9 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     private static boolean supported = true;
     private HashMap<Long, Polyline> paths = new HashMap<Long, Polyline>();
     private PolylineOptions currentPath;
-
+    private LatLng lastPosition;
+    private Point lastPoint;
+    
     static {
         if(AndroidNativeUtil.getActivity() != null) {
             if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
@@ -164,7 +168,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public float getZoom() {
-        return mapInstance.getCameraPosition().zoom;
+        final float[] result = new float[1];
+        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+            public void run() {
+                result[0] = mapInstance.getCameraPosition().zoom;
+            }
+        });
+        return result[0];
     }
 
     public void setZoom(final double lat, final double lon, final float zoom) {
@@ -188,7 +198,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public int getMinZoom() {
-        return (int)mapInstance.getMinZoomLevel();
+        final int[] result = new int[1];
+        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+            public void run() {
+                result[0] = (int)mapInstance.getMinZoomLevel();
+            }
+        });
+        return result[0];
     }
 
     public void removeMapElement(final long param) {
@@ -209,11 +225,23 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public double getLatitude() {
-        return mapInstance.getCameraPosition().target.latitude;
+        final double[] result = new double[1];
+        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+            public void run() {
+                result[0] = mapInstance.getCameraPosition().target.latitude;
+            }
+        });
+        return result[0];
     }
 
     public double getLongitude() {
-        return mapInstance.getCameraPosition().target.longitude;
+        final double[] result = new double[1];
+        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+            public void run() {
+                result[0] = mapInstance.getCameraPosition().target.longitude;
+            }
+        });
+        return result[0];
     }
 
     public void setMapType(final int param) {
@@ -278,7 +306,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public int getMaxZoom() {
-        return (int)mapInstance.getMaxZoomLevel();
+        final int[] result = new int[1];
+        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+            public void run() {
+                result[0] = (int)mapInstance.getMaxZoomLevel();
+            }
+        });
+        return result[0];
     }
 
     public long finishPath(long param) {
@@ -293,6 +327,38 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         return key;
     }
 
+    public void calcScreenPosition(final double lat, final double lon) {
+        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+            public void run() {
+                lastPoint = mapInstance.getProjection().toScreenLocation(new LatLng(lat, lon));
+            }
+        });
+    }
+    
+    public int getScreenX() {
+        return lastPoint.x;
+    }
+    
+    public int getScreenY() {
+        return lastPoint.y;
+    }
+
+    public void calcLatLongPosition(final int x, final int y) {
+        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+            public void run() {
+                lastPosition = mapInstance.getProjection().fromScreenLocation(new Point(x, y));
+            }
+        });
+    }
+    
+    public double getScreenLat() {
+        return lastPosition.latitude;
+    }
+    
+    public double getScreenLon() {
+        return lastPosition.longitude;
+    }
+        
     public boolean isSupported() {
         return supported;
     }

@@ -20,6 +20,8 @@
 @interface com_codename1_googlemaps_InternalNativeMapsImpl : NSObject<GMSMapViewDelegate> {
 GMSMapView *mapView;
     int mapId;
+    CGPoint currentPoint;
+    CLLocationCoordinate2D currentCoordinate;
 }
 
 -(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5;
@@ -41,4 +43,12 @@ GMSMapView *mapView;
 -(BOOL)isSupported;
 -(void)deinitialize;
 -(void)initialize;
+
+-(void)calcScreenPosition:(double)param  param1:(double)param1;
+-(int)getScreenX;
+-(int) getScreenY;
+-(void) calcLatLongPosition:(int)param param1:(int)param1;
+-(double) getScreenLat;
+-(double) getScreenLon;
+
 @end

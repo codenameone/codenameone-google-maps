@@ -85,4 +85,25 @@ public class InternalNativeMapsImpl implements com.codename1.googlemaps.Internal
         return false;
     }
 
+    public void calcScreenPosition(final double lat, final double lon) {
+    }
+    
+    public int getScreenX() {
+        return 0;
+    }
+    
+    public int getScreenY() {
+        return 0;
+    }
+
+    public void calcLatLongPosition(final int x, final int y) {
+    }
+    
+    public double getScreenLat() {
+        return 0;
+    }
+    
+    public double getScreenLon() {
+        return 0;
+    }
 }

@@ -192,6 +192,39 @@
     return polyline;
 }
 
+-(void)calcScreenPosition:(double)param  param1:(double)param1 {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        currentPoint = [mapView.projection pointForCoordinate:CLLocationCoordinate2DMake(param, param1)];
+        [pool release];
+    });
+}
+    
+-(int)getScreenX {
+    return currentPoint.x;
+}
+    
+-(int) getScreenY {
+    return currentPoint.y;
+}
+
+-(void) calcLatLongPosition:(int)param param1:(int)param1 {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        currentCoordinate = [mapView.projection coordinateForPoint:CGPointMake(param, param1)];
+        [pool release];
+    });
+}
+    
+-(double) getScreenLat {
+    return currentCoordinate.latitude;
+}
+    
+-(double) getScreenLon {
+    return currentCoordinate.longitude;
+}
+
+
 -(BOOL)isSupported{
     return YES;
 }
