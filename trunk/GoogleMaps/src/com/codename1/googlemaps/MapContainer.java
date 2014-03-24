@@ -382,7 +382,7 @@ public class MapContainer extends Container {
             return internalLightweight.getCoordFromPosition(x, y);
         }
         internalNative.calcLatLongPosition(x, y);
-        return new Coord(internalNative.getLatitude(), internalNative.getLongitude());
+        return new Coord(internalNative.getScreenLat(), internalNative.getScreenLon());
     }
     
     /**

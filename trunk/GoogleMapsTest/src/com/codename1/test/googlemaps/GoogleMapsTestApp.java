@@ -19,11 +19,15 @@ package com.codename1.test.googlemaps;
 
 import com.codename1.googlemaps.MapContainer;
 import com.codename1.maps.Coord;
+import com.codename1.maps.MapListener;
 import com.codename1.ui.Command;
+import com.codename1.ui.Component;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.EncodedImage;
 import com.codename1.ui.Form;
+import com.codename1.ui.Label;
+import com.codename1.ui.SideMenuBar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
@@ -39,6 +43,8 @@ public class GoogleMapsTestApp {
         try {
             Resources theme = Resources.openLayered("/theme");
             UIManager.getInstance().setThemeProps(theme.getTheme(theme.getThemeResourceNames()[0]));
+            Display.getInstance().setCommandBehavior(Display.COMMAND_BEHAVIOR_SIDE_NAVIGATION);
+            UIManager.getInstance().getLookAndFeel().setMenuBarClass(SideMenuBar.class);
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -52,6 +58,14 @@ public class GoogleMapsTestApp {
         Form hi = new Form("Native Maps Test");
         hi.setLayout(new BorderLayout());
         final MapContainer cnt = new MapContainer();
+        final Label lbl = new Label("Location: ...");
+        cnt.addMapListener(new MapListener() {
+            public void mapPositionUpdated(Component source, int zoom, Coord center) {
+                //lbl.setText("Location: " + center.getLatitude() + ", " + center.getLongitude());
+                lbl.setText("0 lon: " + cnt.getCoordAtPosition(0, 0).getLongitude()+ " w lon " + cnt.getCoordAtPosition(Display.getInstance().getDisplayWidth(), 0).getLongitude());
+            }
+        });
+        hi.addComponent(BorderLayout.SOUTH, lbl);
         hi.addComponent(BorderLayout.CENTER, cnt);
         hi.addCommand(new Command("Move Camera") {
             public void actionPerformed(ActionEvent ev) {
@@ -63,6 +77,20 @@ public class GoogleMapsTestApp {
                 try {
                     cnt.setCameraPosition(new Coord(41.889, -87.622));
                     cnt.addMarker(EncodedImage.create("/maps-pin.png"), new Coord(41.889, -87.622), "Hi marker", "Optional long description", new ActionListener() {
+                        public void actionPerformed(ActionEvent evt) {
+                            Dialog.show("Marker Clicked!", "You clicked the marker", "OK", null);
+                        }
+                    });
+                } catch(IOException err) {
+                    // since the image is iin the jar this is unlikely
+                    err.printStackTrace();
+                }
+            }
+        });
+        hi.addCommand(new Command("Add Marker Here") {
+            public void actionPerformed(ActionEvent ev) {
+                try {
+                    cnt.addMarker(EncodedImage.create("/maps-pin.png"), cnt.getCameraPosition(), "Marker At", "Lat: " + cnt.getCameraPosition().getLatitude() + ", " + cnt.getCameraPosition().getLongitude(), new ActionListener() {
                         public void actionPerformed(ActionEvent evt) {
                             Dialog.show("Marker Clicked!", "You clicked the marker", "OK", null);
                         }
