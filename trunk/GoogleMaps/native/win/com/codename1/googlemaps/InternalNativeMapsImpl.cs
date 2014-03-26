@@ -88,7 +88,7 @@ public class InternalNativeMapsImpl {
         return false;
     }
 
-    public void calcScreenPosition(final double lat, final double lon) {
+    public void calcScreenPosition(double lat, double lon) {
     }
     
     public int getScreenX() {
@@ -99,7 +99,7 @@ public class InternalNativeMapsImpl {
         return 0;
     }
 
-    public void calcLatLongPosition(final int x, final int y) {
+    public void calcLatLongPosition(int x, int y) {
     }
     
     public double getScreenLat() {
