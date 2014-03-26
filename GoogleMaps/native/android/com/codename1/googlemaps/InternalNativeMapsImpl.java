@@ -56,7 +56,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     private PolylineOptions currentPath;
     private LatLng lastPosition;
     private Point lastPoint;
-    
     static {
         if(AndroidNativeUtil.getActivity() != null) {
             if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
@@ -73,28 +72,29 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             public Bitmap renderViewOnBitmap(View v, int w, int h) {
                 final MapView mv = (MapView)v;
                 final Bitmap[] finished = new Bitmap[1];
-                AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
+                mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
+                    public void onSnapshotReady(Bitmap snapshot) {
+                        /*mv.setDrawingCacheEnabled(true);
+                        Bitmap backBitmap = mv.getDrawingCache();
+                        Bitmap bmOverlay = Bitmap.createBitmap(backBitmap.getWidth(), backBitmap.getHeight(),backBitmap.getConfig());
+                        Canvas canvas = new Canvas(bmOverlay);
+                        canvas.drawBitmap(snapshot, new Matrix(), null);
+                        canvas.drawBitmap(backBitmap, 0, 0, null);*/
+                        //mv.setVisibility(vis);
+                        synchronized(finished) {
+                            finished[0] = snapshot;//bmOverlay;
+                            finished.notify();
+                        }
+                    }
+                });
+                /*AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         final int vis = mv.getVisibility();
                         mv.setVisibility(View.VISIBLE);
-                        mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
-                            public void onSnapshotReady(Bitmap snapshot) {
-                                /*mv.setDrawingCacheEnabled(true);
-                                Bitmap backBitmap = mv.getDrawingCache();
-                                Bitmap bmOverlay = Bitmap.createBitmap(backBitmap.getWidth(), backBitmap.getHeight(),backBitmap.getConfig());
-                                Canvas canvas = new Canvas(bmOverlay);
-                                canvas.drawBitmap(snapshot, new Matrix(), null);
-                                canvas.drawBitmap(backBitmap, 0, 0, null);*/
-                                mv.setVisibility(vis);
-                                synchronized(finished) {
-                                    finished[0] = snapshot;//bmOverlay;
-                                    finished.notify();
-                                }
-                            }
-                        });
                     }
-                });
+                });*/
+                System.out.println("Blocking to render view on bitmap");
                 com.codename1.ui.Display.getInstance().invokeAndBlock(new Runnable() {
                     @Override
                     public void run() {
@@ -107,6 +107,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                         }
                     }
                 });
+                System.out.println("Finished blocking to render view on bitmap");
                 return finished[0];
             }
         });
@@ -170,11 +171,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public float getZoom() {
         final float[] result = new float[1];
+        System.out.println("Blocking for zoom");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = mapInstance.getCameraPosition().zoom;
             }
         });
+        System.out.println("Finished blocking for zoom");
         return result[0];
     }
 
@@ -200,11 +203,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public int getMinZoom() {
         final int[] result = new int[1];
+        System.out.println("Blocking for minZoom");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = (int)mapInstance.getMinZoomLevel();
             }
         });
+        System.out.println("Finished blocking for minZoom");
         return result[0];
     }
 
@@ -227,21 +232,25 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public double getLatitude() {
         final double[] result = new double[1];
+        System.out.println("Blocking for latitude");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = mapInstance.getCameraPosition().target.latitude;
             }
         });
+        System.out.println("Finished blocking for latitude");
         return result[0];
     }
 
     public double getLongitude() {
         final double[] result = new double[1];
+        System.out.println("Blocking for longitude");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = mapInstance.getCameraPosition().target.longitude;
             }
         });
+        System.out.println("Finished blocking for longitude");
         return result[0];
     }
 
@@ -263,6 +272,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     
     public android.view.View createNativeMap(int mapId) {
         this.mapId = mapId;
+        System.out.println("Blocking creation");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 try {
@@ -297,6 +307,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 }
             }
         });
+        System.out.println("Finished blocking creation");
         return view;
     }
 
@@ -313,11 +324,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public int getMaxZoom() {
         final int[] result = new int[1];
+        System.out.println("Blocking max zoom");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = (int)mapInstance.getMaxZoomLevel();
             }
         });
+        System.out.println("Finished blocking max zoom");
         return result[0];
     }
 
