@@ -296,6 +296,7 @@ public class MapContainer extends Container {
     public void clearMapLayers() {
         if(internalNative != null) {
             internalNative.removeAllMarkers();
+            markers.clear();
         } else {
             internalLightweight.removeAllLayers();
             points = null;

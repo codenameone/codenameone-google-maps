@@ -197,6 +197,8 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 mapInstance.clear();
+                markerLookup.clear();
+                listeners.clear();
             }
         });
     }
@@ -219,12 +221,15 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 Marker m = markerLookup.get(param);
                 if(m != null) {
                     m.remove();
+                    markerLookup.remove(param);
+                    listeners.remove(m);
                     return;
                 }
                 
                 Polyline p = paths.get(param);
                 if(p != null) {
                     p.remove();
+                    paths.remove(param);
                 }
             }
         });
