@@ -156,12 +156,21 @@
                                                                 longitude:151.20
                                                                      zoom:6];
         mapView = [GMSMapView mapWithFrame:CGRectZero camera:camera];
-        mapView.myLocationEnabled = YES;
+        mapView.myLocationEnabled = showMyLocation;
         mapView.delegate = self;
         [mapView retain];
         [pool release];
     });
     return mapView;
+}
+
+-(void)setShowMyLocation:(BOOL)param {
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        showMyLocation = param;
+        if(mapView != nil) {
+            mapView.myLocationEnabled = showMyLocation;
+        } 
+    });
 }
 
 -(int)getMapType{
@@ -193,7 +202,7 @@
 }
 
 -(void)calcScreenPosition:(double)param  param1:(double)param1 {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_sync(dispatch_get_main_queue(), ^{
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         currentPoint = [mapView.projection pointForCoordinate:CLLocationCoordinate2DMake(param, param1)];
         [pool release];
@@ -209,7 +218,7 @@
 }
 
 -(void) calcLatLongPosition:(int)param param1:(int)param1 {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_sync(dispatch_get_main_queue(), ^{
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         currentCoordinate = [mapView.projection coordinateForPoint:CGPointMake(param, param1)];
         [pool release];

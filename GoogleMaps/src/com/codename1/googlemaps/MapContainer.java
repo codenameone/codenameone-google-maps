@@ -68,7 +68,8 @@ public class MapContainer extends Container {
     private static HashMap<Integer, MapContainer> instances = new HashMap<Integer, MapContainer>();
     private static int currentMapId;
     private int mapId;
-            
+    private boolean showMyLocation;
+    
     /**
      * Default constructor creates an instance with the standard OpenStreetMap version if necessary
      */
@@ -462,6 +463,27 @@ public class MapContainer extends Container {
             return;
         }
         listeners.remove(listener);
+    }
+
+    /**
+     * Show my location is a feature of the native maps only that allows marking
+     * a users location on the map with a circle
+     * @return the showMyLocation
+     */
+    public boolean isShowMyLocation() {
+        return showMyLocation;
+    }
+
+    /**
+     * Show my location is a feature of the native maps only that allows marking
+     * a users location on the map with a circle
+     * @param showMyLocation the showMyLocation to set
+     */
+    public void setShowMyLocation(boolean showMyLocation) {
+        this.showMyLocation = showMyLocation;
+        if(isNativeMaps()) {
+            internalNative.setShowMyLocation(showMyLocation);
+        }
     }
     
     /**

@@ -56,6 +56,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     private PolylineOptions currentPath;
     private LatLng lastPosition;
     private Point lastPoint;
+    private boolean showMyLocation;
     static {
         if(AndroidNativeUtil.getActivity() != null) {
             if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
@@ -274,6 +275,18 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             }
         });
     }
+
+    public void setShowMyLocation(boolean show) {
+        showMyLocation = show;
+        if(mapInstance != null) {
+            AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mapInstance.setMyLocationEnabled(showMyLocation);
+                }
+            });            
+        }
+    }
     
     public android.view.View createNativeMap(int mapId) {
         this.mapId = mapId;
@@ -304,6 +317,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                            MapContainer.fireMapChangeEvent(InternalNativeMapsImpl.this.mapId, (int)position.zoom, position.target.latitude, position.target.longitude);
                        }
                     });
+                    mapInstance.setMyLocationEnabled(showMyLocation);
                 } catch (Exception e) {
                     System.out.println("Failed to initialize, google play services not installed: " + e);
                     e.printStackTrace();
