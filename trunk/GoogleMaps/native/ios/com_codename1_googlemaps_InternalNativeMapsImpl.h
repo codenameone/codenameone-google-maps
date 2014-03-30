@@ -22,6 +22,7 @@ GMSMapView *mapView;
     int mapId;
     CGPoint currentPoint;
     CLLocationCoordinate2D currentCoordinate;
+    BOOL showMyLocation;
 }
 
 -(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5;
@@ -50,5 +51,6 @@ GMSMapView *mapView;
 -(void) calcLatLongPosition:(int)param param1:(int)param1;
 -(double) getScreenLat;
 -(double) getScreenLon;
+-(void)setShowMyLocation:(BOOL)param;
 
 @end

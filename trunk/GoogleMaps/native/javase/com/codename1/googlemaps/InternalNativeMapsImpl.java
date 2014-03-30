@@ -106,4 +106,7 @@ public class InternalNativeMapsImpl implements com.codename1.googlemaps.Internal
     public double getScreenLon() {
         return 0;
     }
+
+    public void setShowMyLocation(boolean show) {
+    }
 }

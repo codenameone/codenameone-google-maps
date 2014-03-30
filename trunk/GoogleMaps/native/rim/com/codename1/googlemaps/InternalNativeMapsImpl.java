@@ -106,4 +106,7 @@ public class InternalNativeMapsImpl {
     public double getScreenLon() {
         return 0;
     }
+
+    public void setShowMyLocation(boolean show) {
+    }
 }
