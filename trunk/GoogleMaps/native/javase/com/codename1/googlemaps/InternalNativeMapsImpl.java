@@ -109,4 +109,7 @@ public class InternalNativeMapsImpl implements com.codename1.googlemaps.Internal
 
     public void setShowMyLocation(boolean show) {
     }
+
+    public void setRotateGestureEnabled(boolean e) {
+    }
 }

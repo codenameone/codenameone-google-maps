@@ -69,6 +69,7 @@ public class MapContainer extends Container {
     private static int currentMapId;
     private int mapId;
     private boolean showMyLocation;
+    private boolean rotateGestureEnabled;
     
     /**
      * Default constructor creates an instance with the standard OpenStreetMap version if necessary
@@ -126,6 +127,7 @@ public class MapContainer extends Container {
         }
         internalLightweight = new MapComponent(provider);
         addComponent(BorderLayout.CENTER, internalLightweight);
+        setRotateGestureEnabled(true);
     }
     
     static void mapUpdated(int mapId) {
@@ -483,6 +485,23 @@ public class MapContainer extends Container {
         this.showMyLocation = showMyLocation;
         if(isNativeMaps()) {
             internalNative.setShowMyLocation(showMyLocation);
+        }
+    }
+
+    /**
+     * @return the rotateGestureEnabled
+     */
+    public boolean isRotateGestureEnabled() {
+        return rotateGestureEnabled;
+    }
+
+    /**
+     * @param rotateGestureEnabled the rotateGestureEnabled to set
+     */
+    public final void setRotateGestureEnabled(boolean rotateGestureEnabled) {
+        this.rotateGestureEnabled = rotateGestureEnabled;
+        if(isNativeMaps()) {
+            internalNative.setRotateGestureEnabled(rotateGestureEnabled);
         }
     }
     

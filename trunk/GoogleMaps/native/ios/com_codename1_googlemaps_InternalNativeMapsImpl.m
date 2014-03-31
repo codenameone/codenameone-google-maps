@@ -157,6 +157,9 @@
                                                                      zoom:6];
         mapView = [GMSMapView mapWithFrame:CGRectZero camera:camera];
         mapView.myLocationEnabled = showMyLocation;
+        mapView.settings.compassButton = showMyLocation;
+        mapView.settings.myLocationButton = showMyLocation;
+        mapView.settings.rotateGestures = rotateGesture;
         mapView.delegate = self;
         [mapView retain];
         [pool release];
@@ -164,11 +167,22 @@
     return mapView;
 }
 
+-(void)setRotateGestureEnabled:(BOOL)param {
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        rotateGesture = param;
+        if(mapView != nil) {
+            mapView.settings.rotateGestures = rotateGesture;
+        } 
+    });
+}
+
 -(void)setShowMyLocation:(BOOL)param {
     dispatch_sync(dispatch_get_main_queue(), ^{
         showMyLocation = param;
         if(mapView != nil) {
             mapView.myLocationEnabled = showMyLocation;
+            mapView.settings.compassButton = showMyLocation;
+            mapView.settings.myLocationButton = showMyLocation;
         } 
     });
 }

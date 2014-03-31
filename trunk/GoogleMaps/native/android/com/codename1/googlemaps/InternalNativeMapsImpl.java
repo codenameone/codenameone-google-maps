@@ -57,6 +57,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     private LatLng lastPosition;
     private Point lastPoint;
     private boolean showMyLocation;
+    private boolean rotateGestureEnabled;
     static {
         if(AndroidNativeUtil.getActivity() != null) {
             if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
@@ -318,6 +319,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                        }
                     });
                     mapInstance.setMyLocationEnabled(showMyLocation);
+                    mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
                 } catch (Exception e) {
                     System.out.println("Failed to initialize, google play services not installed: " + e);
                     e.printStackTrace();
@@ -351,6 +353,18 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         });
         System.out.println("Finished blocking max zoom");
         return result[0];
+    }
+    
+    public void setRotateGestureEnabled(boolean e) {
+        rotateGestureEnabled = e;
+        if(mapInstance != null) { 
+            AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
+                }
+            });
+        }
     }
 
     public long finishPath(long param) {
