@@ -109,4 +109,7 @@ public class InternalNativeMapsImpl {
 
     public void setShowMyLocation(boolean show) {
     }
+
+    public void setRotateGestureEnabled(boolean e) {
+    }
 }

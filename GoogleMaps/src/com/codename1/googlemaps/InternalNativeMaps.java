@@ -56,4 +56,5 @@ public interface InternalNativeMaps extends NativeInterface {
     public double getScreenLon();
     
     public void setShowMyLocation(boolean show);
+    public void setRotateGestureEnabled(boolean e);
 }

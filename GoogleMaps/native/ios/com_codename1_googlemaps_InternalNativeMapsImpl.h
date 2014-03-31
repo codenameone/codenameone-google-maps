@@ -23,6 +23,7 @@ GMSMapView *mapView;
     CGPoint currentPoint;
     CLLocationCoordinate2D currentCoordinate;
     BOOL showMyLocation;
+    BOOL rotateGesture;
 }
 
 -(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5;
@@ -52,5 +53,6 @@ GMSMapView *mapView;
 -(double) getScreenLat;
 -(double) getScreenLon;
 -(void)setShowMyLocation:(BOOL)param;
+-(void)setRotateGestureEnabled:(BOOL)param;
 
 @end
