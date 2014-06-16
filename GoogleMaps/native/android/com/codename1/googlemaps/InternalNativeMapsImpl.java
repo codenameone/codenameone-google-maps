@@ -318,6 +318,12 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                            MapContainer.fireMapChangeEvent(InternalNativeMapsImpl.this.mapId, (int)position.zoom, position.target.latitude, position.target.longitude);
                        }
                     });
+                    mapInstance.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                        public void onMapClick(LatLng point) {
+                            Point p = mapInstance.getProjection().toScreenLocation(point);
+                            MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
+                        }
+                    });
                     mapInstance.setMyLocationEnabled(showMyLocation);
                     mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
                 } catch (Exception e) {
