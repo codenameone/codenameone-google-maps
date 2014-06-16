@@ -14,8 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #import "com_codename1_googlemaps_InternalNativeMapsImpl.h"
 #include "com_codename1_googlemaps_MapContainer.h"
+#import "CodenameOne_GLViewController.h"
 
 @implementation com_codename1_googlemaps_InternalNativeMapsImpl
 
@@ -46,13 +48,18 @@
     return marker;
 }
 
+- (void) mapView:(GMSMapView *)mapView didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
+    CGPoint pp = [mapView.projection pointForCoordinate:coordinate];
+    com_codename1_googlemaps_MapContainer_fireTapEventStatic___int_int_int(CN1_THREAD_GET_STATE_PASS_ARG mapId, pp.x, pp.y);
+}
+
 -(void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position {
-    com_codename1_googlemaps_MapContainer_fireMapChangeEvent___int_int_double_double(mapId, (int)mapView.camera.zoom, mapView.camera.target.latitude, mapView.camera.target.longitude);
+    com_codename1_googlemaps_MapContainer_fireMapChangeEvent___int_int_double_double(CN1_THREAD_GET_STATE_PASS_ARG mapId, (int)mapView.camera.zoom, mapView.camera.target.latitude, mapView.camera.target.longitude);
 }
 
 -(BOOL)mapView:(GMSMapView *)mapView didTapMarker:(GMSMarker *)marker {
     if(marker.userData != nil) {
-        com_codename1_googlemaps_MapContainer_fireMarkerEvent___int_long(mapId, marker);
+        com_codename1_googlemaps_MapContainer_fireMarkerEvent___int_long(CN1_THREAD_GET_STATE_PASS_ARG mapId, marker);
         return YES;
     }
     return NO;

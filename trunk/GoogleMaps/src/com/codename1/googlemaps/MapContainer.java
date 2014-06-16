@@ -34,6 +34,7 @@ import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Point;
 import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.util.EventDispatcher;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -70,6 +71,8 @@ public class MapContainer extends Container {
     private int mapId;
     private boolean showMyLocation;
     private boolean rotateGestureEnabled;
+    
+    private EventDispatcher tapListener;
     
     /**
      * Default constructor creates an instance with the standard OpenStreetMap version if necessary
@@ -125,7 +128,31 @@ public class MapContainer extends Container {
             } 
             internalNative = null;
         }
-        internalLightweight = new MapComponent(provider);
+        internalLightweight = new MapComponent(provider) {
+            private boolean drg = false;
+            
+            @Override
+            public void pointerDragged(int x, int y) {
+                super.pointerDragged(x, y); 
+                drg = true;
+            }
+
+            @Override
+            public void pointerDragged(int[] x, int[] y) {
+                super.pointerDragged(x, y); 
+                drg = true;
+            }
+
+            @Override
+            public void pointerReleased(int x, int y) {
+                super.pointerReleased(x, y); 
+                if(!drg) {
+                    fireTapEvent(x, y);
+                }
+                drg = false;
+            }
+
+        };
         addComponent(BorderLayout.CENTER, internalLightweight);
         setRotateGestureEnabled(true);
     }
@@ -424,6 +451,51 @@ public class MapContainer extends Container {
                 return;
             }
             mc.fireMapListenerEvent(zoom, lat, lon);
+        }
+    }
+    
+    /**
+     * Adds a listener to user tapping on a map location, this shouldn't fire for 
+     * dragging.
+     * 
+     * @param e the tap listener
+     */
+    public void addTapListener(ActionListener e) {
+        if(tapListener == null) {
+            tapListener = new EventDispatcher();
+        }
+        tapListener.addListener(e);
+    }
+    
+    /**
+     * Removes the listener to user tapping on a map location, this shouldn't fire for 
+     * dragging.
+     * 
+     * @param e the tap listener
+     */
+    public void removeTapListener(ActionListener e) {
+        if(tapListener == null) {
+            return;
+        }
+        tapListener.removeListener(e);
+        if(!tapListener.hasListeners()) {
+            tapListener = null;
+        }
+    }
+    
+    static void fireTapEventStatic(int mapId, int x, int y) {
+        final MapContainer mc = instances.get(mapId);
+        if(mc != null) {
+            mc.fireTapEvent(x, y);
+        }
+    }
+    
+    private void fireTapEvent(int x, int y) { 
+        final MapContainer mc = instances.get(mapId);
+        if(mc != null) {
+            if(tapListener != null) {
+                tapListener.fireActionEvent(new ActionEvent(this, x, y));
+            }
         }
     }
     
