@@ -264,7 +264,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     public void setMapType(final int param) {
         AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                switch(mapInstance.getMapType()) {
+                switch(param) {
                     case MapContainer.MAP_TYPE_HYBRID:
                         mapInstance.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                         return;
