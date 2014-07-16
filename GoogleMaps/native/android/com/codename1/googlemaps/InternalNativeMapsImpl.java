@@ -72,6 +72,10 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         }
         AndroidNativeUtil.registerViewRenderer(MapView.class, new AndroidNativeUtil.BitmapViewRenderer() {
             public Bitmap renderViewOnBitmap(View v, int w, int h) {
+                // prevent potential exception during transitions
+                if(w <= 10 || h <= 10) {
+                    return null;
+                }
                 final MapView mv = (MapView)v;
                 final Bitmap[] finished = new Bitmap[1];
                 mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
