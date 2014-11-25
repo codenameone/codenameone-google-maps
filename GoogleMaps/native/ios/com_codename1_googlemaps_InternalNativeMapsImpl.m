@@ -19,6 +19,8 @@
 #include "com_codename1_googlemaps_MapContainer.h"
 #import "CodenameOne_GLViewController.h"
 
+extern float scaleValue;
+
 @implementation com_codename1_googlemaps_InternalNativeMapsImpl
 
 -(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5{
@@ -231,11 +233,11 @@
 }
     
 -(int)getScreenX {
-    return currentPoint.x;
+    return currentPoint.x * scaleValue;
 }
     
 -(int) getScreenY {
-    return currentPoint.y;
+    return currentPoint.y * scaleValue;
 }
 
 -(void) calcLatLongPosition:(int)param param1:(int)param1 {
