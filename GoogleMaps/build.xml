@@ -58,6 +58,7 @@
 
     <target name="jar" depends="compile,Stubs">
         <mkdir dir="build/lib" />
+        <mkdir dir="build/stubs"/>
         <zip basedir="${build.classes.dir}" compress="false" destfile="build/lib/main.zip" />
         <zip basedir="build/stubs" compress="false" destfile="build/lib/stubs.zip" />
         <copy file="manifest.properties" todir="build/lib" />
@@ -66,7 +67,8 @@
         <antcall target="buildNativeAND" />        
         <antcall target="buildNativeSE" />        
         <antcall target="buildNativeWIN" />        
-        <antcall target="buildNativeME" />       
+        <antcall target="buildNativeME" />  
+        <antcall target="buildNativeJavascript" />     
         <mkdir dir="dist" />
         <zip basedir="build/lib" compress="true" destfile="dist/${application.title}.cn1lib" />
         <copy file="dist/GoogleMaps.cn1lib" todir="../GoogleMapsTest/lib/" />
@@ -155,6 +157,24 @@
         </condition> 
 
         <antcall target="createIosZip" />        
+    </target>
+    
+    <target name="buildNativeJavascript">
+        <path id="javascriptNativeDir">
+            <fileset dir="native/javascript"/>
+        </path> 
+        <property name="test.javascript.property" refid="javascriptNativeDir"/> 
+        <condition property="doesntHaveJavascriptFiles">
+            <equals arg1="" arg2="${test.javascriptDir.property}"/>
+        </condition> 
+
+        <antcall target="createJavascriptZip" />        
+    </target>
+    
+    <target name="createJavascriptZip"
+        unless="doesntHaveJavascriptFiles">
+        <echo>Zipping Javascript native code</echo>
+        <zip basedir="native/javascript" compress="false" destfile="build/lib/nativejavascript.zip" />
     </target>
     
     <target name="createIosZip"
