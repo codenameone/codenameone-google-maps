@@ -16,6 +16,24 @@
     var MAP_TYPE_NONE = 3;
     
     var uniqueIdCounter = 0;
+    
+    
+    function ready(self, callback) {
+        if (self.initialized || callback === undefined) {
+            if (self.onInitialized !== undefined) {
+                while (self.onInitialized.length > 0) {
+                    (self.onInitialized.shift()).apply(self);
+                }
+            }
+            if (callback !== undefined) {
+                callback.apply(self);
+            }
+        } else {
+            self.onInitialized = self.onInitialized || [];
+            
+            self.onInitialized.push(callback);
+        }
+    }
 
 var o = {};
 
@@ -25,102 +43,120 @@ var o = {};
     };
 
     o.calcScreenPosition__double_double = function(param1, param2, callback) {
-        this.lastPoint = this.map.getProjection().fromLatLngToPoint(new google.maps.LatLng(param1, param2));
-        console.log("Calculating screen position");
-        console.log(this.lastPoint);
-        callback.complete();
+        ready(this, function() {
+            this.lastPoint = this.map.getProjection().fromLatLngToPoint(new google.maps.LatLng(param1, param2));
+            callback.complete();
+        });
     };
 
     o.getLatitude_ = function(callback) {
-        callback.complete(this.map.getCenter().lat());
+        ready(this, function() {
+            callback.complete(this.map.getCenter().lat());
+        });
     };
 
     o.removeMapElement__long = function(param1, callback) {
-        this.paths = this.paths || {};
-        var line = this.paths[param1];
-        if (line) {
-            delete this.paths[param1];
-            line.setMap(null);
-        }
-        
-        
-        callback.complete();
+        ready(this, function() {
+            this.paths = this.paths || {};
+            var line = this.paths[param1];
+            if (line) {
+                delete this.paths[param1];
+                line.setMap(null);
+            }
+            
+            
+            callback.complete();
+        });
     };
 
     o.getMinZoom_ = function(callback) {
-        callback.complete(this.map.mapTypes.get(this.map.getMapTypeId()).minZoom);
+        ready(this, function() {
+            callback.complete(this.map.mapTypes.get(this.map.getMapTypeId()).minZoom);
+        });
     };
 
     o.getScreenLon_ = function(callback) {
-        callback.complete(this.lastPosition.lng());
+        ready( this, function() {
+            callback.complete(this.lastPosition.lng());
+        });
     };
 
     o.getLongitude_ = function(callback) {
-        callback.complete(this.map.getCenter().lng());
+        ready(this, function() { 
+            callback.complete(this.map.getCenter().lng());
+        });
     };
 
     o.getScreenX_ = function(callback) {
-        callback.complete(this.lastPoint.x);
+        ready(this, function() {
+            callback.complete(this.lastPoint.x);
+        });
     };
 
     o.setMapType__int = function(param1, callback) {
-        switch (param1) {
-            case MAP_TYPE_HYBRID :
-                this.map.setMapTypeId(google.maps.MapTypeId.HYBRID); break;
-            case MAP_TYPE_TERRAIN :
-                this.map.setMapTypeId(google.maps.MapTypeId.TERRAIN); break;
-            default :
-                this.map.setMapTypeId(google.maps.MapTypeId.ROADMAP); break;
-        }
-        callback.complete();
+        ready(this, function() {
+            switch (param1) {
+                case MAP_TYPE_HYBRID :
+                    this.map.setMapTypeId(google.maps.MapTypeId.HYBRID); break;
+                case MAP_TYPE_TERRAIN :
+                    this.map.setMapTypeId(google.maps.MapTypeId.TERRAIN); break;
+                default :
+                    this.map.setMapTypeId(google.maps.MapTypeId.ROADMAP); break;
+            }
+            callback.complete();
+        });
     };
 
     o.calcLatLongPosition__int_int = function(param1, param2, callback) {
-        
-        // retrieve the lat lng for the far extremities of the (visible) map
-        var latLngBounds = this.map.getBounds();
-        var neBound = latLngBounds.getNorthEast();
-        var swBound = latLngBounds.getSouthWest();
-
-        // convert the bounds in pixels
-        var neBoundInPx = this.map.getProjection().fromLatLngToPoint(neBound);
-        var swBoundInPx = this.map.getProjection().fromLatLngToPoint(swBound);
-
-        // compute the percent of x and y coordinates related to the div containing the map; in my case the screen
-        var procX = param1/jQuery(this.el).width();
-        var procY = param2/jQuery(this.el).height();
-
-        // compute new coordinates in pixels for lat and lng;
-        // for lng : subtract from the right edge of the container the left edge, 
-        // multiply it by the percentage where the x coordinate was on the screen
-        // related to the container in which the map is placed and add back the left boundary
-        // you should now have the Lng coordinate in pixels
-        // do the same for lat
-        var newLngInPx = (neBoundInPx.x - swBoundInPx.x) * procX + swBoundInPx.x;
-        var newLatInPx = (swBoundInPx.y - neBoundInPx.y) * procY + neBoundInPx.y;
-
-        // convert from google point in lat lng and have fun :)
-        var newLatLng = this.map.getProjection().fromPointToLatLng(new google.maps.Point(newLngInPx, newLatInPx));
-        
-        //this.lastPosition = this.map.getProjection().fromPointToLatLng(new google.maps.Point(param1, param2));
-        this.lastPosition = newLatLng;
-        callback.complete();
+        ready(this, function() {
+            // retrieve the lat lng for the far extremities of the (visible) map
+            var latLngBounds = this.map.getBounds();
+            var neBound = latLngBounds.getNorthEast();
+            var swBound = latLngBounds.getSouthWest();
+    
+            // convert the bounds in pixels
+            var neBoundInPx = this.map.getProjection().fromLatLngToPoint(neBound);
+            var swBoundInPx = this.map.getProjection().fromLatLngToPoint(swBound);
+    
+            // compute the percent of x and y coordinates related to the div containing the map; in my case the screen
+            var procX = param1/jQuery(this.el).width();
+            var procY = param2/jQuery(this.el).height();
+    
+            // compute new coordinates in pixels for lat and lng;
+            // for lng : subtract from the right edge of the container the left edge, 
+            // multiply it by the percentage where the x coordinate was on the screen
+            // related to the container in which the map is placed and add back the left boundary
+            // you should now have the Lng coordinate in pixels
+            // do the same for lat
+            var newLngInPx = (neBoundInPx.x - swBoundInPx.x) * procX + swBoundInPx.x;
+            var newLatInPx = (swBoundInPx.y - neBoundInPx.y) * procY + neBoundInPx.y;
+    
+            // convert from google point in lat lng and have fun :)
+            var newLatLng = this.map.getProjection().fromPointToLatLng(new google.maps.Point(newLngInPx, newLatInPx));
+            
+            //this.lastPosition = this.map.getProjection().fromPointToLatLng(new google.maps.Point(param1, param2));
+            this.lastPosition = newLatLng;
+            callback.complete();
+        });
     };
 
     o.setShowMyLocation__boolean = function(param1, callback) {
-        console.log("Show my location not implemented yet in Javascript port");
-        callback.complete();
+        ready(this, function() {
+            console.log("Show my location not implemented yet in Javascript port");
+            callback.complete();
+        });
     };
 
     o.createNativeMap__int = function(param1, callback) {
         var self = this;
         //jQuery(document).ready(function() {
-        (function(){
-            self.el = jQuery('<div id=\"cn1-googlemaps-canvas\"></div>').get(0);
+        self.el = jQuery('<div id=\"cn1-googlemaps-canvas\"></div>').get(0);
+        var initialize = function(){
+            
             self.mapId = param1;
 
             var mapOptions = {
-                zoom: 8,
+                zoom: 11,
                 center: new google.maps.LatLng(-34.397, 150.644)
             };
             self.map = new google.maps.Map(self.el, mapOptions);
@@ -153,122 +189,157 @@ var o = {};
                 fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
             });
 
-
-
-            callback.complete(self.el);
-        })();
+            self.initialized = true;
+            ready(self);
+            
+        };
+        setTimeout(initialize, 200);
+        callback.complete(self.el);
+        
+        //initialize();
+        //google.maps.event.addDomListener(window, 'load', initialize);
         
     };
 
     o.addMarker__byte_1ARRAY_double_double_java_lang_String_java_lang_String_boolean = function(param1, lat, lon, text, snippet, cb, callback) {
-        var self = this;
-        var uint8 = new Uint8Array(param1);
-        var url = 'data:image/png;base64,' + window.arrayBufferToBase64(uint8.buffer);
-        var markerOpts = {
-            icon : url,
-            map : this.map,
-            position : new google.maps.LatLng(lat, lon),
-            title : text
-        };
-        
-        var key = uniqueIdCounter++;
-        this.markerLookup = this.markerLookup || {};
-        
-        var marker = new google.maps.Marker(markerOpts);
-        
-        var fireMarkerEvent = this.$GLOBAL$.com_codename1_googlemaps_MapContainer.fireMarkerEvent__int_long$async;
-        google.maps.event.addListener(marker, 'click', function() {
-            fireMarkerEvent(self.mapId, key);
+        ready(this, function() {
+            var self = this;
+            var uint8 = new Uint8Array(param1);
+            var url = 'data:image/png;base64,' + window.arrayBufferToBase64(uint8.buffer);
+            var markerOpts = {
+                icon : url,
+                map : this.map,
+                position : new google.maps.LatLng(lat, lon),
+                title : text
+            };
+            
+            var key = uniqueIdCounter++;
+            this.markerLookup = this.markerLookup || {};
+            
+            var marker = new google.maps.Marker(markerOpts);
+            
+            var fireMarkerEvent = this.$GLOBAL$.com_codename1_googlemaps_MapContainer.fireMarkerEvent__int_long$async;
+            google.maps.event.addListener(marker, 'click', function() {
+                fireMarkerEvent(self.mapId, key);
+            });
+            
+            this.markerLookup[key] = marker;
+            
+            callback.complete(key);
         });
-        
-        this.markerLookup[key] = marker;
-        
-        callback.complete(key);
     };
 
     o.setRotateGestureEnabled__boolean = function(param1, callback) {
-        console.log("setRotateGestureEnabled not implemented yet in Javascript");
-        callback.complete();
+        ready(this, function() {
+            console.log("setRotateGestureEnabled not implemented yet in Javascript");
+            callback.complete();
+        });
     };
 
     o.finishPath__long = function(param1, callback) {
-        var id = uniqueIdCounter++;
-        this.paths = this.paths || {};
-        this.paths[id] = new google.maps.Polyline(this.currentPath);
-        this.paths[id].setMap(this.map);
-        callback.complete(id);
+        ready(this, function() {
+            var id = uniqueIdCounter++;
+            this.paths = this.paths || {};
+            this.paths[id] = new google.maps.Polyline(this.currentPath);
+            this.paths[id].setMap(this.map);
+            callback.complete(id);
+        });
     };
 
     o.getMaxZoom_ = function(callback) {
-        callback.complete(this.map.mapTypes.get(this.map.getMapTypeId()).maxZoom);
+        ready(this, function() {
+            callback.complete(this.map.mapTypes.get(this.map.getMapTypeId()).maxZoom);
+        });
     };
 
     o.getMapType_ = function(callback) {
-        var type;
-        switch (this.map.getMapTypeId()) {
-            case google.maps.MapTypeId.HYBRID :
-                type = MAP_TYPE_HYBRID; break;
-            case google.maps.MapTypeId.TERRAIN :
-            case google.maps.MapTypeId.SATELLITE:
-                type = MAP_TYPE_TERRAIN; break;
-            default :
-                type = MAP_TYPE_NONE;
-                
-        }
-        callback.complete(type);
+        ready(this, function() {
+            var type;
+            switch (this.map.getMapTypeId()) {
+                case google.maps.MapTypeId.HYBRID :
+                    type = MAP_TYPE_HYBRID; break;
+                case google.maps.MapTypeId.TERRAIN :
+                case google.maps.MapTypeId.SATELLITE:
+                    type = MAP_TYPE_TERRAIN; break;
+                default :
+                    type = MAP_TYPE_NONE;
+                    
+            }
+            callback.complete(type);
+        });
         
     };
 
     o.getScreenLat_ = function(callback) {
-        callback.complete(this.lastPosition.lat());
+        ready(this, function() {
+            callback.complete(this.lastPosition.lat());
+        });
     };
 
     o.beginPath_ = function(callback) {
-        this.currentPath = {path : []};//new google.maps.PolylineOptions();
-        callback.complete(1);
+        ready(this, function() {
+            this.currentPath = {path : []};//new google.maps.PolylineOptions();
+            callback.complete(1);
+        });
     };
 
     o.setPosition__double_double = function(param1, param2, callback) {
-        this.map.setCenter(new google.maps.LatLng(param1, param2));
-        callback.complete();
+        ready(this, function() {
+        //console.log("Setting position");
+            this.map.setCenter(new google.maps.LatLng(param1, param2));
+            callback.complete();
+        });
     };
 
     o.deinitialize_ = function(callback) {
-        //jQuery(this.el).remove();
-        callback.complete();
+        ready(this, function() {
+            //jQuery(this.el).remove();
+            callback.complete();
+        });
     };
 
     o.getZoom_ = function(callback) {
-        callback.complete(this.map.getZoom());
+        ready(this, function() {
+            callback.complete(this.map.getZoom());
+        });
     };
 
     o.setZoom__double_double_float = function(param1, param2, param3, callback) {
-        this.map.setCenter(new google.maps.LatLng(param1, param2));
-        this.map.setZoom(param3);
-        callback.complete();
+        ready(this, function() {
+        //console.log("Setting zoom");
+            this.map.setCenter(new google.maps.LatLng(param1, param2));
+            this.map.setZoom(param3);
+            callback.complete();
+        });
     };
 
     o.getScreenY_ = function(callback) {
-        callback.complete(this.lastPoint.y);
+        ready(this, function() {
+            callback.complete(this.lastPoint.y);
+        });
     };
 
     o.addToPath__long_double_double = function(param1, param2, param3, callback) {
-        this.currentPath.path.push(new google.maps.LatLng(param2, param3));
-        callback.complete();
+        ready(this, function() {
+            this.currentPath.path.push(new google.maps.LatLng(param2, param3));
+            callback.complete();
+        });
     };
 
     o.removeAllMarkers_ = function(callback) {
-        var toRemove = [];
-        var self = this;
-        for (var key in this.markerLookup) {
-            self.markerLookup[key].setMap(null);
-            toRemove.push(key);
-        }
-        for (var i=0; i<toRemove.length; i++) {
-            delete this.markerLookup[toRemove[i]];
-        }
-        
-        callback.complete();
+        ready(this, function() {
+            var toRemove = [];
+            var self = this;
+            for (var key in this.markerLookup) {
+                self.markerLookup[key].setMap(null);
+                toRemove.push(key);
+            }
+            for (var i=0; i<toRemove.length; i++) {
+                delete this.markerLookup[toRemove[i]];
+            }
+            
+            callback.complete();
+        });
     };
 
     o.isSupported_ = function(callback) {
