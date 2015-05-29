@@ -17,7 +17,12 @@
     
     var uniqueIdCounter = 0;
     
-    
+    // We seem to get a race condition in chrome if we 
+    // initialize the map before the element is added to the dom.
+    // Therefore we set a timeout when first initializing the map 
+    // But now we need to wait until this initialization happens before
+    // subsequent calls on the map will work so we wrap any calls
+    // that need to access the map in this function
     function ready(self, callback) {
         if (self.initialized || callback === undefined) {
             if (self.onInitialized !== undefined) {
@@ -193,7 +198,7 @@ var o = {};
             ready(self);
             
         };
-        setTimeout(initialize, 200);
+        setTimeout(initialize, 500);
         callback.complete(self.el);
         
         //initialize();
