@@ -1,6 +1,6 @@
 # Codename One Google Native Maps Support
 
-Allows Codename One developers to embed native Google Maps on iOS/Android or 
+Allows [Codename One](https://www.codenameone.com/) developers to embed native Google Maps on iOS/Android or 
 fallback to Codename One MapComponent on other platforms. 
 Check out a brief tutorial on using this project here: 
 http://www.codenameone.com/blog/mapping-natively.html 
