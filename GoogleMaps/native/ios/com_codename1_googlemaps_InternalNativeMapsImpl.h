@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 #import <Foundation/Foundation.h>
-#import "GoogleMaps.h"
+#import "GoogleMaps/GoogleMaps.h"
 
 @interface com_codename1_googlemaps_InternalNativeMapsImpl : NSObject<GMSMapViewDelegate> {
 GMSMapView *mapView;

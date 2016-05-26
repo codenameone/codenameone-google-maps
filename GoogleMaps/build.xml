@@ -62,6 +62,9 @@
         <zip basedir="${build.classes.dir}" compress="false" destfile="build/lib/main.zip" />
         <zip basedir="build/stubs" compress="false" destfile="build/lib/stubs.zip" />
         <copy file="manifest.properties" todir="build/lib" />
+        <copy file="codenameone_library_appended.properties" todir="build/lib" />
+        <copy file="codenameone_library_required.properties" todir="build/lib" />
+        <copy file="codenameone_library.properties" todir="build/lib" />
         <antcall target="buildNativeIOS" />        
         <antcall target="buildNativeRIM" />        
         <antcall target="buildNativeAND" />        

@@ -22,13 +22,8 @@ within your project:
 
 ```
 javascript.googlemaps.key=YOUR_JAVASCRIPT_API_KEY
-ios.objC=true
 android.xapplication=<meta-data android:name="com.google.android.maps.v2.API_KEY" android:value="YOUR_ANDROID_API_KEY"/>
-ios.add_libs=libc++.dylib;libicucore.dylib;libz.dylib;CoreData.framework;CoreText.framework;GLKit.framework;ImageIO.framework;SystemConfiguration.framework
-ios.glAppDelegateHeader=#import "GoogleMaps.h"
-android.includeGPlayServices=true
 ios.afterFinishLaunching=[GMSServices provideAPIKey:@"YOUR_IOS_API_KEY"];
-android.xpermissions=<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/> <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/><uses-feature android:glEsVersion="0x00020000" android:required="true"/> 
 ```
 
 Make sure to replace the values YOUR_ANDROID_API_KEY, YOUR_IOS_API_KEY, and YOUR_JAVASCRIPT_API_KEY with the values you 
