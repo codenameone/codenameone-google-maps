@@ -16,7 +16,6 @@
  */
 package com.codename1.googlemaps;
 
-import android.app.Activity;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.GoogleMap;
 import com.codename1.impl.android.AndroidNativeUtil;
@@ -24,12 +23,8 @@ import java.util.HashMap;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.LatLng;
-import java.util.Map;
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.os.Bundle;
 import com.codename1.impl.android.AndroidImplementation;
 import com.codename1.impl.android.LifecycleListener;
@@ -40,7 +35,6 @@ import android.os.Looper;
 import android.view.View;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.LatLngBounds;
 import android.graphics.Point;
 import com.google.android.gms.maps.model.CameraPosition;
 
@@ -81,21 +75,28 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                     return null;
                 }
                 final Bitmap[] finished = new Bitmap[1];
-                mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
-                    public void onSnapshotReady(Bitmap snapshot) {
-                        /*mv.setDrawingCacheEnabled(true);
-                        Bitmap backBitmap = mv.getDrawingCache();
-                        Bitmap bmOverlay = Bitmap.createBitmap(backBitmap.getWidth(), backBitmap.getHeight(),backBitmap.getConfig());
-                        Canvas canvas = new Canvas(bmOverlay);
-                        canvas.drawBitmap(snapshot, new Matrix(), null);
-                        canvas.drawBitmap(backBitmap, 0, 0, null);*/
-                        //mv.setVisibility(vis);
-                        synchronized(finished) {
-                            finished[0] = snapshot;//bmOverlay;
-                            finished.notify();
-                        }
+                AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+
+                    public void run() {
+                        mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
+                            public void onSnapshotReady(Bitmap snapshot) {
+                                /*mv.setDrawingCacheEnabled(true);
+                                Bitmap backBitmap = mv.getDrawingCache();
+                                Bitmap bmOverlay = Bitmap.createBitmap(backBitmap.getWidth(), backBitmap.getHeight(),backBitmap.getConfig());
+                                Canvas canvas = new Canvas(bmOverlay);
+                                canvas.drawBitmap(snapshot, new Matrix(), null);
+                                canvas.drawBitmap(backBitmap, 0, 0, null);*/
+                                //mv.setVisibility(vis);
+                                synchronized(finished) {
+                                    finished[0] = snapshot;//bmOverlay;
+                                    finished.notify();
+                                }
+                            }
+                        });
                     }
+                    
                 });
+                
                 /*AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
