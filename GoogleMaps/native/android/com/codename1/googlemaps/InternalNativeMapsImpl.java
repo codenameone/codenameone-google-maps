@@ -52,6 +52,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     private Point lastPoint;
     private boolean showMyLocation;
     private boolean rotateGestureEnabled;
+
     static {
         if(AndroidNativeUtil.getActivity() != null) {
             if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
@@ -65,60 +66,57 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             }
         }
         AndroidNativeUtil.registerViewRenderer(MapView.class, new AndroidNativeUtil.BitmapViewRenderer() {
+            private boolean rendering;
             public Bitmap renderViewOnBitmap(View v, int w, int h) {
-                // prevent potential exception during transitions
-                if(w < 10 || h < 10) {
+                if (rendering) {
                     return null;
                 }
-                final MapView mv = (MapView)v;
-                if(mv.getParent() == null || mv.getHeight() < 10 || mv.getWidth() < 10) {
-                    return null;
-                }
-                final Bitmap[] finished = new Bitmap[1];
-                AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+                rendering = true;
+                try {
+                    // prevent potential exception during transitions
+                    if(w < 10 || h < 10) {
+                        rendering = false;
+                        return null;
+                    }
+                    final MapView mv = (MapView)v;
+                    if(mv.getParent() == null || mv.getHeight() < 10 || mv.getWidth() < 10) {
+                        return null;
+                    }
+                    final Bitmap[] finished = new Bitmap[1];
+                    AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
 
-                    public void run() {
-                        mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
-                            public void onSnapshotReady(Bitmap snapshot) {
-                                /*mv.setDrawingCacheEnabled(true);
-                                Bitmap backBitmap = mv.getDrawingCache();
-                                Bitmap bmOverlay = Bitmap.createBitmap(backBitmap.getWidth(), backBitmap.getHeight(),backBitmap.getConfig());
-                                Canvas canvas = new Canvas(bmOverlay);
-                                canvas.drawBitmap(snapshot, new Matrix(), null);
-                                canvas.drawBitmap(backBitmap, 0, 0, null);*/
-                                //mv.setVisibility(vis);
-                                synchronized(finished) {
-                                    finished[0] = snapshot;//bmOverlay;
-                                    finished.notify();
+                        public void run() {
+                            mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
+                                public void onSnapshotReady(Bitmap snapshot) {
+
+                                    synchronized(finished) {
+                                        finished[0] = snapshot;//bmOverlay;
+                                        finished.notify();
+                                    }
+                                }
+                            });
+                        }
+
+                    });
+
+                    System.out.println("Blocking to render view on bitmap");
+                    com.codename1.ui.Display.getInstance().invokeAndBlock(new Runnable() {
+                        @Override
+                        public void run() {
+                            synchronized(finished) {
+                                while(finished[0] == null) {
+                                    try {
+                                        finished.wait(100);
+                                    } catch(InterruptedException er) {}
                                 }
                             }
-                        });
-                    }
-                    
-                });
-                
-                /*AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        final int vis = mv.getVisibility();
-                        mv.setVisibility(View.VISIBLE);
-                    }
-                });*/
-                System.out.println("Blocking to render view on bitmap");
-                com.codename1.ui.Display.getInstance().invokeAndBlock(new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized(finished) {
-                            while(finished[0] == null) {
-                                try {
-                                    finished.wait(100);
-                                } catch(InterruptedException er) {}
-                            }
                         }
-                    }
-                });
-                System.out.println("Finished blocking to render view on bitmap");
-                return finished[0];
+                    });
+                    System.out.println("Finished blocking to render view on bitmap");
+                    return finished[0];
+                } finally {
+                    rendering = false;
+                }
             }
         });
     }
