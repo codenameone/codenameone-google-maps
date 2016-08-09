@@ -20,11 +20,15 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.GoogleMap;
 import com.codename1.impl.android.AndroidNativeUtil;
 import java.util.HashMap;
+
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.LatLng;
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.view.ViewGroup;
 import android.os.Bundle;
 import com.codename1.impl.android.AndroidImplementation;
 import com.codename1.impl.android.LifecycleListener;
@@ -36,6 +40,9 @@ import android.view.View;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.Polyline;
 import android.graphics.Point;
+//import com.codename1.impl.android.AndroidImplementation.PeerDraw;
+import com.codename1.io.Log;
+import com.codename1.ui.Display;
 import com.google.android.gms.maps.model.CameraPosition;
 
 public class InternalNativeMapsImpl implements LifecycleListener {
@@ -55,6 +62,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     static {
         if(AndroidNativeUtil.getActivity() != null) {
+            android.util.Log.d("CN1 Maps", "Initializing maps");
             if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
                 initMaps();
             } else {
@@ -64,6 +72,8 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                     }
                 });
             }
+        } else {
+            android.util.Log.d("CN1 Mapss", "Did not initialize maps because activity was null");
         }
         AndroidNativeUtil.registerViewRenderer(MapView.class, new AndroidNativeUtil.BitmapViewRenderer() {
             private boolean rendering;
@@ -99,7 +109,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
                     });
 
-                    System.out.println("Blocking to render view on bitmap");
                     com.codename1.ui.Display.getInstance().invokeAndBlock(new Runnable() {
                         @Override
                         public void run() {
@@ -112,7 +121,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                             }
                         }
                     });
-                    System.out.println("Finished blocking to render view on bitmap");
                     return finished[0];
                 } finally {
                     rendering = false;
@@ -120,20 +128,24 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             }
         });
     }
-
+    private static boolean initialized = false;
     private static void initMaps() {
-        try {
-            // this triggers the creation of the maps so they are ready when the peer component is invoked
-            MapsInitializer.initialize(AndroidNativeUtil.getActivity());
-            MapView v = new MapView(AndroidNativeUtil.getActivity());
-            v.onCreate(AndroidNativeUtil.getActivationBundle());
-            v.onResume();
-            v.getMap();
-        } catch (Exception e) {
-            supported = false;
-            System.out.println("Failed to initialize, google play services not installed: " + e);
-            e.printStackTrace();
-        }        
+        if (!initialized) {
+            initialized = true;
+            try {
+                // this triggers the creation of the maps so they are ready when the peer component is invoked
+                MapsInitializer.initialize(AndroidNativeUtil.getActivity());
+                MapView v = new MapView(AndroidNativeUtil.getActivity());
+
+                v.onCreate(AndroidNativeUtil.getActivationBundle());
+                v.onResume();
+                v.getMap();
+            } catch (Exception e) {
+                supported = false;
+                System.out.println("Failed to initialize, google play services not installed: " + e);
+                e.printStackTrace();
+            }
+        } 
     }
     
     public long addMarker(final byte[] icon, final double lat, final double lon, final String text, final String snippet, final boolean callback) {
@@ -179,13 +191,11 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public float getZoom() {
         final float[] result = new float[1];
-        System.out.println("Blocking for zoom");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = mapInstance.getCameraPosition().zoom;
             }
         });
-        System.out.println("Finished blocking for zoom");
         return result[0];
     }
 
@@ -213,13 +223,11 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public int getMinZoom() {
         final int[] result = new int[1];
-        System.out.println("Blocking for minZoom");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = (int)mapInstance.getMinZoomLevel();
             }
         });
-        System.out.println("Finished blocking for minZoom");
         return result[0];
     }
 
@@ -245,25 +253,21 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public double getLatitude() {
         final double[] result = new double[1];
-        System.out.println("Blocking for latitude");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = mapInstance.getCameraPosition().target.latitude;
             }
         });
-        System.out.println("Finished blocking for latitude");
         return result[0];
     }
 
     public double getLongitude() {
         final double[] result = new double[1];
-        System.out.println("Blocking for longitude");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = mapInstance.getCameraPosition().target.longitude;
             }
         });
-        System.out.println("Finished blocking for longitude");
         return result[0];
     }
 
@@ -294,44 +298,59 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             });            
         }
     }
-    
+
+    private void setupMap() {
+
+    }
+
+    private void installListeners() {
+        if (mapInstance == null) {
+            view = null;
+            System.out.println("Failed to get map instance, it seems google play services are not installed");
+            return;
+        }
+        view.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                mapInstance = googleMap;
+                mapInstance.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    public boolean onMarkerClick(Marker marker) {
+                        Long val = listeners.get(marker);
+                        if (val != null) {
+                            MapContainer.fireMarkerEvent(InternalNativeMapsImpl.this.mapId, val.longValue());
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                mapInstance.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+                    public void onCameraChange(CameraPosition position) {
+                        MapContainer.fireMapChangeEvent(InternalNativeMapsImpl.this.mapId, (int) position.zoom, position.target.latitude, position.target.longitude);
+                    }
+                });
+                mapInstance.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                    public void onMapClick(LatLng point) {
+                        Point p = mapInstance.getProjection().toScreenLocation(point);
+                        MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
+                    }
+                });
+                mapInstance.setMyLocationEnabled(showMyLocation);
+                mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
+            }
+        });
+
+    }
+
     public android.view.View createNativeMap(int mapId) {
         this.mapId = mapId;
-        System.out.println("Blocking creation");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 try {
                     view = new MapView(AndroidNativeUtil.getActivity());
                     view.onCreate(AndroidNativeUtil.getActivationBundle());
                     mapInstance = view.getMap();
-                    if(mapInstance == null) {
-                        view = null;
-                        System.out.println("Failed to get map instance, it seems google play services are not installed");
-                        return;
-                    }
-                    mapInstance.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                        public boolean onMarkerClick (Marker marker) {
-                            Long val = listeners.get(marker);
-                            if(val != null) {
-                                MapContainer.fireMarkerEvent(InternalNativeMapsImpl.this.mapId, val.longValue());
-                                return true;
-                            }
-                            return false;
-                        }
-                    });
-                    mapInstance.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
-                       public void onCameraChange(CameraPosition position) {
-                           MapContainer.fireMapChangeEvent(InternalNativeMapsImpl.this.mapId, (int)position.zoom, position.target.latitude, position.target.longitude);
-                       }
-                    });
-                    mapInstance.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-                        public void onMapClick(LatLng point) {
-                            Point p = mapInstance.getProjection().toScreenLocation(point);
-                            MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
-                        }
-                    });
-                    mapInstance.setMyLocationEnabled(showMyLocation);
-                    mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
+                    installListeners();
+
                 } catch (Exception e) {
                     System.out.println("Failed to initialize, google play services not installed: " + e);
                     e.printStackTrace();
@@ -340,7 +359,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 }
             }
         });
-        System.out.println("Finished blocking creation");
         return view;
     }
 
@@ -357,13 +375,11 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public int getMaxZoom() {
         final int[] result = new int[1];
-        System.out.println("Blocking max zoom");
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = (int)mapInstance.getMaxZoomLevel();
             }
         });
-        System.out.println("Finished blocking max zoom");
         return result[0];
     }
     
@@ -428,44 +444,73 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public void onCreate(Bundle savedInstanceState) {
-        System.out.println("On create..");
-        if(view != null) {
-            view.onCreate(savedInstanceState);
+        try {
+            if (view != null) {
+                view.onCreate(savedInstanceState);
+                initMaps();
+                mapInstance = view.getMap();
+
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void onResume() {
-        System.out.println("On resume..");
-        if(view != null) {
-            view.onResume();
+        try {
+            if(view != null) {
+                mapInstance = view.getMap();
+                view.onResume();
+                installListeners();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void onPause() {
-        System.out.println("On pause..");
-        if(view != null) {
-            view.onPause();
+        try {
+            if(view != null) {
+                view.onPause();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
     public void onDestroy() {
-        System.out.println("On destroy..");
-        if(view != null) {
-            view.onDestroy();
+        try {
+            if(view != null) {
+                if (view.getParent() != null) {
+                    ((ViewGroup) view.getParent()).removeView(view);
+                }
+                view.onDestroy();
+                initialized = false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void onSaveInstanceState(Bundle b) {
-        System.out.println("On save instance state..");
-        if(view != null) {
-            view.onSaveInstanceState(b);
+        try {
+            if(view != null) {
+                view.onSaveInstanceState(b);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void onLowMemory() {
-        System.out.println("On low memory..");
-        if(view != null) {
-            view.onLowMemory();
+        try {
+            if(view != null) {
+                view.onLowMemory();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -477,9 +522,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         AndroidNativeUtil.addLifecycleListener(this);        
         AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                view.invalidate();
-                view.onPause();
-                view.onResume();
+                try {
+                    view.invalidate();
+                    view.onPause();
+                    view.onResume();
+                } catch (Exception e) {
+                    Log.e(e);
+                }
             }
         });
     }
