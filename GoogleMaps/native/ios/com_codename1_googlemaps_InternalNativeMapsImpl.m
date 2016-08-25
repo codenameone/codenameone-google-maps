@@ -32,7 +32,15 @@ extern float scaleValue;
         marker.title = param3;
         marker.snippet = param4;
         if(param != nil) {
-            UIImage* img = [UIImage imageWithData:param];
+            UIImage* img = nil;
+            if ([[UIImage class] respondsToSelector:@selector(imageWithData:scale:)]){
+                // If we are on retina we need to provide scale, or the images will be too big and 
+                // blurry.
+                // Scale version available only in iOS 6 and later so check here.
+                img = [UIImage imageWithData:param scale:scaleValue];
+            } else {
+                img = [UIImage imageWithData:param];
+            }
             marker.icon = img;
         }
         marker.map = mapView;

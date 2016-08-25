@@ -304,11 +304,12 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     private void installListeners() {
+        /*
         if (mapInstance == null) {
             view = null;
             System.out.println("Failed to get map instance, it seems google play services are not installed");
             return;
-        }
+        }*/
         view.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
