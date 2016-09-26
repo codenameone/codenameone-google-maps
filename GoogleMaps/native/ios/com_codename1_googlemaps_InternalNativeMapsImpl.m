@@ -63,6 +63,10 @@ extern float scaleValue;
     com_codename1_googlemaps_MapContainer_fireTapEventStatic___int_int_int(CN1_THREAD_GET_STATE_PASS_ARG mapId, pp.x, pp.y);
 }
 
+- (void) mapView:(GMSMapView *)mapView didLongPressAtCoordinate:(CLLocationCoordinate2D)coordinate {
+    CGPoint pp = [mapView.projection pointForCoordinate:coordinate];
+    com_codename1_googlemaps_MapContainer_fireLongPressEventStatic___int_int_int(CN1_THREAD_GET_STATE_PASS_ARG mapId, pp.x, pp.y);
+}
 -(void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position {
     com_codename1_googlemaps_MapContainer_fireMapChangeEvent___int_int_double_double(CN1_THREAD_GET_STATE_PASS_ARG mapId, (int)mapView.camera.zoom, mapView.camera.target.latitude, mapView.camera.target.longitude);
 }

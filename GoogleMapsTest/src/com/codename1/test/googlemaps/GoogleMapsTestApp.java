@@ -65,6 +65,22 @@ public class GoogleMapsTestApp {
                 lbl.setText("0 lon: " + cnt.getCoordAtPosition(0, 0).getLongitude()+ " w lon " + cnt.getCoordAtPosition(Display.getInstance().getDisplayWidth(), 0).getLongitude());
             }
         });
+        
+        cnt.addTapListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                
+            }
+            
+                    
+        });
+        
+        cnt.addLongPressListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                Dialog.show("Long Tap", "Long tap detected", "OK", null);
+            }
+        });
         hi.addComponent(BorderLayout.SOUTH, lbl);
         hi.addComponent(BorderLayout.CENTER, cnt);
         hi.addCommand(new Command("Move Camera") {

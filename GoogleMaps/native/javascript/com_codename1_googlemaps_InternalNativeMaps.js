@@ -168,11 +168,33 @@ var o = {};
 
             //var self = this;
             var fireTapEventStatic = self.$GLOBAL$.com_codename1_googlemaps_MapContainer.fireTapEventStatic__int_int_int$async;
+            var fireLongPressEventStatic = self.$GLOBAL$.com_codename1_googlemaps_MapContainer.fireLongPressEventStatic__int_int_int$async;
             google.maps.event.addListener(self.map, 'click', function(evt) {
                 //Point p = mapInstance.getProjection().toScreenLocation(point);
                 //MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
                 var p = self.map.getProjection().fromLatLngToPoint(evt.latLng);
                 fireTapEventStatic(self.mapId, p.x, p.y);
+
+            });
+            
+            var inLongPress = false;
+            google.maps.event.addListener(self.map, 'mousedown', function(evt) {
+                var p = self.map.getProjection().fromLatLngToPoint(evt.latLng);
+                inLongPress = true;
+                setTimeout(function() {
+                    if (inLongPress) {
+                        fireLongPressEventStatic(self.mapId, p.x, p.y);
+                    }
+                }, 500);
+                
+
+            });
+            google.maps.event.addListener(self.map, 'mouseup', function(evt) {
+                inLongPress = false;
+
+            });
+            google.maps.event.addListener(self.map, 'dragstart', function(evt) {
+                inLongPress = false;
 
             });
 

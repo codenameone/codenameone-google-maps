@@ -335,6 +335,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                         MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
                     }
                 });
+                mapInstance.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+
+                    public void onMapLongClick(LatLng point) {
+                        Point p = mapInstance.getProjection().toScreenLocation(point);
+                        MapContainer.fireLongPressEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
+                    }
+                });
                 mapInstance.setMyLocationEnabled(showMyLocation);
                 mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
             }
