@@ -57,7 +57,7 @@ public class GoogleMapsTestApp {
         }
         Form hi = new Form("Native Maps Test");
         hi.setLayout(new BorderLayout());
-        final MapContainer cnt = new MapContainer();
+        final MapContainer cnt = new MapContainer("AIzaSyDLODcbaojaxUXs2lu7Fm4H_eVns4QcuTI");
         final Label lbl = new Label("Location: ...");
         cnt.addMapListener(new MapListener() {
             public void mapPositionUpdated(Component source, int zoom, Coord center) {
@@ -67,20 +67,11 @@ public class GoogleMapsTestApp {
         });
         
         cnt.addTapListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent evt) {
-                
-            }
-            
-                    
+                Dialog.show("Tap", "Tap detected", "OK", null);
+            }       
         });
         
-        cnt.addLongPressListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                Dialog.show("Long Tap", "Long tap detected", "OK", null);
-            }
-        });
         hi.addComponent(BorderLayout.SOUTH, lbl);
         hi.addComponent(BorderLayout.CENTER, cnt);
         hi.addCommand(new Command("Move Camera") {

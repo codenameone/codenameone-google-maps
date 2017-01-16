@@ -17,6 +17,12 @@
 
 package com.codename1.googlemaps;
 
+import com.codename1.io.Log;
+import com.codename1.javascript.JSFunction;
+import com.codename1.javascript.JSObject;
+import com.codename1.javascript.JavascriptContext;
+import com.codename1.location.Location;
+import com.codename1.location.LocationManager;
 import com.codename1.maps.Coord;
 import com.codename1.maps.MapComponent;
 import com.codename1.maps.MapListener;
@@ -27,6 +33,7 @@ import com.codename1.ui.Container;
 import com.codename1.maps.providers.MapProvider;
 import com.codename1.maps.providers.OpenStreetMapProvider;
 import com.codename1.system.NativeLookup;
+import com.codename1.ui.BrowserComponent;
 import com.codename1.ui.Display;
 import com.codename1.ui.EncodedImage;
 import com.codename1.ui.PeerComponent;
@@ -61,7 +68,9 @@ public class MapContainer extends Container {
     public static final int MAP_TYPE_NONE = 3;
     
     private InternalNativeMaps internalNative;
-    private MapComponent internalLightweight;
+    private MapComponent internalLightweightCmp;
+    private BrowserComponent internalBrowser;
+    private  JavascriptContext browserContext;
     private ArrayList<MapListener> listeners;
     private PointsLayer points;
     
@@ -112,6 +121,23 @@ public class MapContainer extends Container {
      * @param provider the map provider
      */
     public MapContainer(MapProvider provider) {
+        this(provider, null);
+    }
+    
+    /**
+     * Uses HTML JavaScript google maps on fallback platforms instead of the tiled map
+     * @param javaScriptMapsAPIKey the API key for HTML maps
+     */
+    public MapContainer(String javaScriptMapsAPIKey) {
+        this(null, javaScriptMapsAPIKey);
+    }
+    
+    /**
+     * Uses the given provider in case of a fallback
+     * 
+     * @param provider the map provider
+     */
+    private MapContainer(MapProvider provider, String htmlApiKey) {
         super(new BorderLayout());
         internalNative = (InternalNativeMaps)NativeLookup.create(InternalNativeMaps.class);
         if(internalNative != null) {
@@ -128,32 +154,104 @@ public class MapContainer extends Container {
             } 
             internalNative = null;
         }
-        internalLightweight = new MapComponent(provider) {
-            private boolean drg = false;
-            
-            @Override
-            public void pointerDragged(int x, int y) {
-                super.pointerDragged(x, y); 
-                drg = true;
-            }
+        if(provider != null) {
+            internalLightweightCmp = new MapComponent(provider) {
+                private boolean drg = false;
 
-            @Override
-            public void pointerDragged(int[] x, int[] y) {
-                super.pointerDragged(x, y); 
-                drg = true;
-            }
-
-            @Override
-            public void pointerReleased(int x, int y) {
-                super.pointerReleased(x, y); 
-                if(!drg) {
-                    fireTapEvent(x, y);
+                @Override
+                public void pointerDragged(int x, int y) {
+                    super.pointerDragged(x, y); 
+                    drg = true;
                 }
-                drg = false;
-            }
 
-        };
-        addComponent(BorderLayout.CENTER, internalLightweight);
+                @Override
+                public void pointerDragged(int[] x, int[] y) {
+                    super.pointerDragged(x, y); 
+                    drg = true;
+                }
+
+                @Override
+                public void pointerReleased(int x, int y) {
+                    super.pointerReleased(x, y); 
+                    if(!drg) {
+                        fireTapEvent(x, y);
+                    }
+                    drg = false;
+                }
+
+            };
+            addComponent(BorderLayout.CENTER, internalLightweightCmp);
+        } else {
+            internalBrowser = new BrowserComponent();
+            Location loc = LocationManager.getLocationManager().getLastKnownLocation();
+            internalBrowser.setPage(
+                        "<!DOCTYPE html>\n" +
+                        "<html>\n" +
+                        "  <head>\n" +
+                        "    <title>Simple Map</title>\n" +
+                        "    <meta name=\"viewport\" content=\"initial-scale=1.0\">\n" +
+                        "    <meta charset=\"utf-8\">\n" +
+                        "    <style>\n" +
+                        "      /* Always set the map height explicitly to define the size of the div\n" +
+                        "       * element that contains the map. */\n" +
+                        "      #map {\n" +
+                        "        height: 100%;\n" +
+                        "      }\n" +
+                        "      /* Optional: Makes the sample page fill the window. */\n" +
+                        "      html, body {\n" +
+                        "        height: 100%;\n" +
+                        "        margin: 0;\n" +
+                        "        padding: 0;\n" +
+                        "      }\n" +
+                        "    </style>\n" +
+                        "  </head>\n" +
+                        "  <body>\n" +
+                        "    <div id=\"map\"></div>\n" +
+                        "    <script>\n" +
+                        "      var map;\n" +
+                        "      function initMap() {\n" +
+                        "        var origin = {lat: "+ loc.getLatitude() + ", lng: "  + loc.getLongitude() + "};\n" +
+                        "        map = new google.maps.Map(document.getElementById('map'), {\n" +
+                        "          center: origin,\n" +
+                        "          zoom: 8\n" +
+                        "        });\n" +
+                        "        var clickHandler = new ClickEventHandler(map, origin);\n" +
+                        "      }\n" +
+                        "      var ClickEventHandler = function(map, origin) {\n" +
+                        "        this.origin = origin;\n" +
+                        "        this.map = map;\n" +
+                        "        this.directionsService = new google.maps.DirectionsService;\n" +
+                        "        this.directionsDisplay = new google.maps.DirectionsRenderer;\n" +
+                        "        this.directionsDisplay.setMap(map);\n" +
+                        "        this.placesService = new google.maps.places.PlacesService(map);\n" +
+                        "        this.infowindow = new google.maps.InfoWindow;\n" +
+                        "        this.infowindowContent = document.getElementById('infowindow-content');\n" +
+                        "        this.infowindow.setContent(this.infowindowContent);\n" +
+                        "\n" +
+                        "        this.map.addListener('click', this.handleClick.bind(this));\n" +
+                        "      };\n" +
+                        "      ClickEventHandler.prototype.handleClick = function(event) {\n" +
+                        "           cn1OnClickCallback(event);" +
+                        "      };\n" +
+                        "    </script>\n" +
+                        "    <script src=\"https://maps.googleapis.com/maps/api/js?key=" + 
+                        htmlApiKey +
+                        "&callback=initMap\"\n" +
+                        "    async defer></script>\n" +
+                        "  </body>\n" +
+                        "</html>", "/");
+            browserContext = new JavascriptContext(internalBrowser);
+            internalBrowser.addWebEventListener("onLoad", new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    browserContext.set("cn1OnClickCallback", new JSFunction() {
+                        public void apply(JSObject self, Object[] args) {
+                            Log.p("Click");
+                        }
+                    });
+                }
+            });
+            addComponent(BorderLayout.CENTER, internalBrowser);
+        }
         setRotateGestureEnabled(true);
     }
     
@@ -224,31 +322,36 @@ public class MapContainer extends Container {
             markers.add(o);
             return o;
         } else {
-            PointLayer pl = new PointLayer(location, text, icon);
-            if(points == null) {
-                points = new PointsLayer();
-                internalLightweight.addLayer(points);
-                points.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        PointLayer point = (PointLayer)evt.getSource();
-                        for(MapObject o : markers) {
-                            if(o.point == point) {
-                                if(o.callback != null) {
-                                    o.callback.actionPerformed(new ActionEvent(o));
+            if(internalLightweightCmp != null) {
+                PointLayer pl = new PointLayer(location, text, icon);
+                if(points == null) {
+                    points = new PointsLayer();
+                    internalLightweightCmp.addLayer(points);
+                    points.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent evt) {
+                            PointLayer point = (PointLayer)evt.getSource();
+                            for(MapObject o : markers) {
+                                if(o.point == point) {
+                                    if(o.callback != null) {
+                                        o.callback.actionPerformed(new ActionEvent(o));
+                                    }
+                                    return;
                                 }
-                                return;
                             }
                         }
-                    }
-                });
+                    });
+                    points.addPoint(pl);
+                    MapObject o = new MapObject();
+                    o.point = pl;
+                    o.callback = onClick;
+                    markers.add(o);
+                    return o;
+                } 
+            } else {
+                // TODO: Browser component
             }
-            points.addPoint(pl);
-            MapObject o = new MapObject();
-            o.point = pl;
-            o.callback = onClick;
-            markers.add(o);
-            return o;
         }
+        return null;
     }
     
     /**
@@ -268,14 +371,19 @@ public class MapContainer extends Container {
             markers.add(o);
             return o;
         } else {
-            LinesLayer ll = new LinesLayer();
-            ll.addLineSegment(path);
-            
-            internalLightweight.addLayer(ll);
-            MapObject o = new MapObject();
-            o.lines = ll;
-            markers.add(o);
-            return o;
+            if(internalLightweightCmp != null) {
+                LinesLayer ll = new LinesLayer();
+                ll.addLineSegment(path);
+
+                internalLightweightCmp.addLayer(ll);
+                MapObject o = new MapObject();
+                o.lines = ll;
+                markers.add(o);
+                return o;
+            } else {
+                // TODO: Browser component                
+                return null;
+            }
         }
     }
     
@@ -286,7 +394,12 @@ public class MapContainer extends Container {
      */
     public int getMaxZoom() {
         if(internalNative == null) {
-            return internalLightweight.getMaxZoomLevel();
+            if(internalLightweightCmp != null) {
+                return internalLightweightCmp.getMaxZoomLevel();
+            } else {
+                // TODO: Browser component
+                return 20;
+            }
         }
         return internalNative.getMaxZoom();
     }
@@ -298,7 +411,12 @@ public class MapContainer extends Container {
      */
     public int getMinZoom() {
         if(internalNative == null) {
-            return internalLightweight.getMinZoomLevel();
+            if(internalLightweightCmp != null) {
+                return internalLightweightCmp.getMinZoomLevel();
+            } else {
+                // TODO: Browser component
+                return 1;
+            }
         }
         return internalNative.getMinZoom();
     }
@@ -313,7 +431,11 @@ public class MapContainer extends Container {
             internalNative.removeMapElement(obj.mapKey);
         } else {
             if(obj.lines != null) {
-                internalLightweight.removeLayer(obj.lines);
+                if(internalLightweightCmp != null) {
+                    internalLightweightCmp.removeLayer(obj.lines);
+                } else {
+                    // TODO: Browser component
+                }
             } else {
                 points.removePoint(obj.point);
             }
@@ -328,8 +450,12 @@ public class MapContainer extends Container {
             internalNative.removeAllMarkers();
             markers.clear();
         } else {
-            internalLightweight.removeAllLayers();
-            points = null;
+            if(internalLightweightCmp != null) {
+                internalLightweightCmp.removeAllLayers();
+                points = null;
+            } else {
+                // TODO: Browser component                
+            }
         }
     }
     
@@ -342,7 +468,11 @@ public class MapContainer extends Container {
         if(internalNative != null) {
             internalNative.setZoom(crd.getLatitude(), crd.getLongitude(), zoom);
         } else {
-            internalLightweight.zoomTo(crd, zoom);
+            if(internalLightweightCmp != null) {
+                internalLightweightCmp.zoomTo(crd, zoom);
+            } else {
+                // TODO: Browser component                
+            }
         }
     }
     
@@ -354,7 +484,11 @@ public class MapContainer extends Container {
         if(internalNative != null) {
             return internalNative.getZoom();
         } else {
-            return internalLightweight.getZoomLevel();
+            if(internalLightweightCmp != null) {
+                return internalLightweightCmp.getZoomLevel();
+            }
+            // TODO: Browser component
+            return 7;
         }        
     }
 
@@ -385,7 +519,11 @@ public class MapContainer extends Container {
      */
     public void setCameraPosition(Coord crd) {
         if(internalNative == null) {
-            internalLightweight.zoomTo(crd, internalLightweight.getZoomLevel());
+            if(internalLightweightCmp != null) {
+                internalLightweightCmp.zoomTo(crd, internalLightweightCmp.getZoomLevel());
+            } else {
+                // TODO: Browser component                
+            }
             return;
         }
         internalNative.setPosition(crd.getLatitude(), crd.getLongitude());
@@ -397,7 +535,11 @@ public class MapContainer extends Container {
      */
     public Coord getCameraPosition() {
         if(internalNative == null) {
-            return internalLightweight.getCenter();
+            if(internalLightweightCmp != null) {
+                return internalLightweightCmp.getCenter();
+            } 
+            // TODO: Browser component
+            return new Coord(0, 0);
         }
         return new Coord(internalNative.getLatitude(), internalNative.getLongitude());
     }
@@ -410,7 +552,11 @@ public class MapContainer extends Container {
      */
     public Coord getCoordAtPosition(int x, int y) {
         if(internalNative == null) {
-            return internalLightweight.getCoordFromPosition(x, y);
+            if(internalLightweightCmp != null) {
+                return internalLightweightCmp.getCoordFromPosition(x, y);
+            }
+            // TODO: Browser component
+            return new Coord(0, 0);
         }
         internalNative.calcLatLongPosition(x, y);
         return new Coord(internalNative.getScreenLat(), internalNative.getScreenLon());
@@ -424,7 +570,11 @@ public class MapContainer extends Container {
      */
     public Point getScreenCoordinate(double lat, double lon) {
         if(internalNative == null) {
-            return internalLightweight.getPointFromCoord(new Coord(lat, lon));
+            if(internalLightweightCmp != null) {
+                return internalLightweightCmp.getPointFromCoord(new Coord(lat, lon));
+            }
+            // TODO: Browser component
+            return new Point(0, 0);
         }
         internalNative.calcScreenPosition(lat, lon);
         return new Point(internalNative.getScreenX(), internalNative.getScreenY());
@@ -515,7 +665,11 @@ public class MapContainer extends Container {
      */
     public void addMapListener(MapListener listener) {
         if(internalNative == null) {
-            internalLightweight.addMapListener(listener);
+            if(internalLightweightCmp != null) {
+                internalLightweightCmp.addMapListener(listener);
+            } else {
+                // TODO: Browser component                
+            }
             return;
         }
         if(listeners == null) {
@@ -530,7 +684,11 @@ public class MapContainer extends Container {
      */
     public void removeMapListener(MapListener listener) {
         if(internalNative == null) {
-            internalLightweight.removeMapListener(listener);
+            if(internalLightweightCmp != null) {
+                internalLightweightCmp.removeMapListener(listener);
+            } else {
+                // TODO: Browser component
+            }
             return;
         }
         if(listeners == null) {

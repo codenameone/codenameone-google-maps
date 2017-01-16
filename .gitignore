@@ -4,8 +4,8 @@
 /GoogleMaps/dist/
 /GoogleMapsTest/build/
 /GoogleMapsTest/dist/
+/GoogleMapsTest/lib/impl/
 .DS_Store
 GoogleMapsTest/.cn1/.lock
 **/*.jar
 **/*.zip
-
