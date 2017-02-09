@@ -183,6 +183,7 @@ public class MapContainer extends Container {
             addComponent(BorderLayout.CENTER, internalLightweightCmp);
         } else {
             internalBrowser = new BrowserComponent();
+            internalBrowser.putClientProperty("BrowserComponent.fireBug", Boolean.TRUE);
             Location loc = LocationManager.getLocationManager().getLastKnownLocation();
             internalBrowser.setPage(
                         "<!DOCTYPE html>\n" +
@@ -243,7 +244,8 @@ public class MapContainer extends Container {
             browserContext = new JavascriptContext(internalBrowser);
             internalBrowser.addWebEventListener("onLoad", new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    browserContext.set("cn1OnClickCallback", new JSFunction() {
+                    JSObject window = (JSObject)browserContext.get("window");
+                    window.set("cn1OnClickCallback", new JSFunction() {
                         public void apply(JSObject self, Object[] args) {
                             Log.p("Click");
                         }
