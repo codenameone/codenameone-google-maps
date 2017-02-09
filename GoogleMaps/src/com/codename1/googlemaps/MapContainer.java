@@ -183,6 +183,9 @@ public class MapContainer extends Container {
             addComponent(BorderLayout.CENTER, internalLightweightCmp);
         } else {
             internalBrowser = new BrowserComponent();
+            internalBrowser.putClientProperty("BrowserComponent.firebug", 
+                    Display.getInstance().getProperty("MapContainer.firebug", "").toLowerCase().equals("true")
+            );
             Location loc = LocationManager.getLocationManager().getLastKnownLocation();
             internalBrowser.setPage(
                         "<!DOCTYPE html>\n" +
@@ -207,7 +210,7 @@ public class MapContainer extends Container {
                         "  </head>\n" +
                         "  <body>\n" +
                         "    <div id=\"map\"></div>\n" +
-                        "    <script>\n" +
+                        "    <script>\n" +                               
                         "      var map;\n" +
                         "      function initMap() {\n" +
                         "        var origin = {lat: "+ loc.getLatitude() + ", lng: "  + loc.getLongitude() + "};\n" +
@@ -218,19 +221,24 @@ public class MapContainer extends Container {
                         "        var clickHandler = new ClickEventHandler(map, origin);\n" +
                         "      }\n" +
                         "      var ClickEventHandler = function(map, origin) {\n" +
+                        "        var self = this;\n" +
                         "        this.origin = origin;\n" +
                         "        this.map = map;\n" +
-                        "        this.directionsService = new google.maps.DirectionsService;\n" +
-                        "        this.directionsDisplay = new google.maps.DirectionsRenderer;\n" +
-                        "        this.directionsDisplay.setMap(map);\n" +
-                        "        this.placesService = new google.maps.places.PlacesService(map);\n" +
-                        "        this.infowindow = new google.maps.InfoWindow;\n" +
-                        "        this.infowindowContent = document.getElementById('infowindow-content');\n" +
-                        "        this.infowindow.setContent(this.infowindowContent);\n" +
+                        "        //this.directionsService = new google.maps.DirectionsService;\n" +
+                        "        //this.directionsDisplay = new google.maps.DirectionsRenderer;\n" +
+                        "        //this.directionsDisplay.setMap(map);\n" +
+                        "        //this.placesService = new google.maps.places.PlacesService(map);\n" +
+                        "        //this.infowindow = new google.maps.InfoWindow;\n" +
+                        "        //this.infowindowContent = document.getElementById('infowindow-content');\n" +
+                        "        //this.infowindow.setContent(this.infowindowContent);\n" +
                         "\n" +
-                        "        this.map.addListener('click', this.handleClick.bind(this));\n" +
+//                        "        google.maps.event.addListener(this.map, 'click', function(evt) {\n" +
+//                        "           self.handleClick(evt);\n" +
+//                        "        });" +
+                                "this.map.addListener('click', this.handleClick.bind(this));\n" +
                         "      };\n" +
-                        "      ClickEventHandler.prototype.handleClick = function(event) {\n" +
+                        "      ClickEventHandler.prototype.handleClick = function(event) {\n" + 
+                        "           //document.getElementById('map').innerHTML = 'foobar';\n" +
                         "           cn1OnClickCallback(event);" +
                         "      };\n" +
                         "    </script>\n" +
@@ -243,7 +251,8 @@ public class MapContainer extends Container {
             browserContext = new JavascriptContext(internalBrowser);
             internalBrowser.addWebEventListener("onLoad", new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    browserContext.set("cn1OnClickCallback", new JSFunction() {
+                    JSObject window = (JSObject)browserContext.get("window");
+                    window.set("cn1OnClickCallback", new JSFunction() {
                         public void apply(JSObject self, Object[] args) {
                             Log.p("Click");
                         }

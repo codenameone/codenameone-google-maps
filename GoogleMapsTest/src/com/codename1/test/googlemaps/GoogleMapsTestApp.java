@@ -57,7 +57,8 @@ public class GoogleMapsTestApp {
         }
         Form hi = new Form("Native Maps Test");
         hi.setLayout(new BorderLayout());
-        final MapContainer cnt = new MapContainer("AIzaSyDLODcbaojaxUXs2lu7Fm4H_eVns4QcuTI");
+        final MapContainer cnt = new MapContainer("AIzaSyBWeRU02YUYPdwRuMFyTKIXUbHjq6e35Gw");
+        
         final Label lbl = new Label("Location: ...");
         cnt.addMapListener(new MapListener() {
             public void mapPositionUpdated(Component source, int zoom, Coord center) {
