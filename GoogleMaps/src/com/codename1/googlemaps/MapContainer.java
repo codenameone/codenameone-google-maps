@@ -183,9 +183,9 @@ public class MapContainer extends Container {
             addComponent(BorderLayout.CENTER, internalLightweightCmp);
         } else {
             internalBrowser = new BrowserComponent();
-            internalBrowser.putClientProperty("BrowserComponent.firebug", 
-                    Display.getInstance().getProperty("MapContainer.firebug", "").toLowerCase().equals("true")
-            );
+
+            internalBrowser.putClientProperty("BrowserComponent.fireBug", Boolean.TRUE);
+
             Location loc = LocationManager.getLocationManager().getLastKnownLocation();
             internalBrowser.setPage(
                         "<!DOCTYPE html>\n" +
