@@ -23,6 +23,22 @@ public class InternalNativeMapsImpl implements com.codename1.googlemaps.Internal
     public double getLatitude() {
         return 0;
     }
+    
+    public double getVisibleRegionNorthEastLatitude(){
+        return 0;
+    }
+    
+    public double getVisibleRegionNorthEastLongitude(){
+        return 0;
+    }
+    
+    public double getVisibleRegionSouthWestLatitude(){
+        return 0;
+    }
+    
+    public double getVisibleRegionSouthWestLongitude(){
+        return 0;
+    }
 
     public void setMapType(int param) {
     }

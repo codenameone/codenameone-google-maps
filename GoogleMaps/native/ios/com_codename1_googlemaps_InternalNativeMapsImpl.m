@@ -155,6 +155,47 @@ extern float scaleValue;
     return lon;
 }
 
+-(double)getVisibleRegionNorthEastLatitude{
+    __block double lat = 0;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        GMSVisibleRegion visibleRegion = mapView.projection.visibleRegion;
+        // Inits with bounds that encompass the visible region.
+        GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithRegion:visibleRegion];
+        lat = bounds.northEast.latitude;
+    });
+    return lat;
+}
+-(double)getVisibleRegionNorthEastLongitude{
+    __block double lon = 0;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        GMSVisibleRegion visibleRegion = mapView.projection.visibleRegion;
+        // Inits with bounds that encompass the visible region.
+        GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithRegion:visibleRegion];
+        lon = bounds.northEast.longitude;
+    });
+    return lon;
+}
+-(double)getVisibleRegionSouthWestLatitude{
+    __block double lat = 0;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        GMSVisibleRegion visibleRegion = mapView.projection.visibleRegion;
+        // Inits with bounds that encompass the visible region.
+        GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithRegion:visibleRegion];
+        lat = bounds.southWest.latitude;
+    });
+    return lat;
+}
+-(double)getVisibleRegionSouthWestLongitude{
+    __block double lon = 0;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        GMSVisibleRegion visibleRegion = mapView.projection.visibleRegion;
+        // Inits with bounds that encompass the visible region.
+        GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithRegion:visibleRegion];
+        lon = bounds.southWest.longitude;
+    });
+    return lon;
+}
+
 -(void)setMapType:(int)param{
     dispatch_async(dispatch_get_main_queue(), ^{
         switch(param) {

@@ -38,6 +38,22 @@ public class InternalNativeMapsImpl {
     public double getLongitude() {
         return 0;
     }
+    
+        public double getVisibleRegionNorthEastLatitude(){
+        return 0;
+    }
+    
+    public double getVisibleRegionNorthEastLongitude(){
+        return 0;
+    }
+    
+    public double getVisibleRegionSouthWestLatitude(){
+        return 0;
+    }
+    
+    public double getVisibleRegionSouthWestLongitude(){
+        return 0;
+    }
 
     public void removeAllMarkers() {
     }
