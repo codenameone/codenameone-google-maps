@@ -54,6 +54,10 @@ public interface InternalNativeMaps extends NativeInterface {
     public void calcLatLongPosition(int x, int y);
     public double getScreenLat();
     public double getScreenLon();
+    public double getVisibleRegionNorthEastLatitude();
+    public double getVisibleRegionNorthEastLongitude();
+    public double getVisibleRegionSouthWestLatitude();
+    public double getVisibleRegionSouthWestLongitude();
     
     public void setShowMyLocation(boolean show);
     public void setRotateGestureEnabled(boolean e);
