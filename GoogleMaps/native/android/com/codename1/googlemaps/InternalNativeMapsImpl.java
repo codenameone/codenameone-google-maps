@@ -270,43 +270,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         });
         return result[0];
     }
-    
-    public double getVisibleRegionNorthEastLatitude() {
-          final double[] result = new double[1];
-        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
-            public void run() {
-                result[0] = mapInstance.googleMap.getProjection().getVisibleRegion().latLngBounds.northeast.latitude;
-            }
-        });
-        return result[0];
-    }
-    public double getVisibleRegionNorthEastLongitude() {
-          final double[] result = new double[1];
-        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
-            public void run() {
-                result[0] = mapInstance.googleMap.getProjection().getVisibleRegion().latLngBounds.northeast.longitude;
-            }
-        });
-        return result[0];
-    }
-    public double getVisibleRegionSouthWestLatitude(){
-          final double[] result = new double[1];
-        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
-            public void run() {
-                result[0] = mapInstance.googleMap.getProjection().getVisibleRegion().latLngBounds.southwest.latitude;
-            }
-        });
-        return result[0];
-    }
-    public double getVisibleRegionSouthWestLongitude(){
-          final double[] result = new double[1];
-        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
-            public void run() {
-                result[0] = mapInstance.googleMap.getProjection().getVisibleRegion().latLngBounds.southwest.longitude;
-            }
-        });
-        return result[0];
-    }
 
     public void setMapType(final int param) {
         AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
