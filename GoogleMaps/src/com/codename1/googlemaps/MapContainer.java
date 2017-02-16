@@ -82,6 +82,7 @@ public class MapContainer extends Container {
     private boolean rotateGestureEnabled;
     
     private EventDispatcher tapListener;
+    private EventDispatcher longPressListener;
     
     /**
      * Default constructor creates an instance with the standard OpenStreetMap version if necessary
@@ -179,6 +180,11 @@ public class MapContainer extends Container {
                     drg = false;
                 }
 
+                @Override
+                public void longPointerPress(int x, int y) {
+                    super.longPointerPress(x, y); 
+                    fireLongPressEvent(x, y);
+                }
             };
             addComponent(BorderLayout.CENTER, internalLightweightCmp);
         } else {
@@ -655,6 +661,44 @@ public class MapContainer extends Container {
             if(tapListener != null) {
                 tapListener.fireActionEvent(new ActionEvent(this, x, y));
             }
+        }
+    }
+    
+    /**
+     * Adds a listener to user long pressing on a map location, this shouldn't fire for 
+     * dragging.
+     * 
+     * @param e the tap listener
+     */
+    public void addLongPressListener(ActionListener e) {
+        if (longPressListener == null) {
+            longPressListener = new EventDispatcher();
+        }
+        longPressListener.addListener(e);
+    }
+
+    /**
+     * Removes the long press listener to user tapping on a map location, this shouldn't fire for 
+     * dragging.
+     * 
+     * @param e the tap listener
+     */
+    public void removeLongPressListener(ActionListener e) {
+        if (longPressListener != null) {
+            longPressListener.removeListener(e);
+        }
+    }
+
+    static void fireLongPressEventStatic(int mapId, int x, int y) {
+        final MapContainer mc = instances.get(mapId);
+        if (mc != null) {
+            mc.fireLongPressEvent(x, y);
+        }
+    }
+
+    private void fireLongPressEvent(int x, int y) {
+        if (longPressListener != null) {
+            longPressListener.fireActionEvent(new ActionEvent(this, x, y));
         }
     }
     
