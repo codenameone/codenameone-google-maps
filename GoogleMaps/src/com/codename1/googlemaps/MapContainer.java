@@ -17,6 +17,7 @@
 
 package com.codename1.googlemaps;
 
+import com.codename1.components.WebBrowser;
 import com.codename1.io.Log;
 import com.codename1.javascript.JSFunction;
 import com.codename1.javascript.JSObject;
@@ -138,7 +139,7 @@ public class MapContainer extends Container {
      * 
      * @param provider the map provider
      */
-    private MapContainer(MapProvider provider, String htmlApiKey) {
+    private MapContainer(MapProvider provider, final String htmlApiKey) {
         super(new BorderLayout());
         internalNative = (InternalNativeMaps)NativeLookup.create(InternalNativeMaps.class);
         if(internalNative != null) {
@@ -190,84 +191,125 @@ public class MapContainer extends Container {
         } else {
             internalBrowser = new BrowserComponent();
 
-            internalBrowser.putClientProperty("BrowserComponent.fireBug", Boolean.TRUE);
-
-            Location loc = LocationManager.getLocationManager().getLastKnownLocation();
-            internalBrowser.setPage(
-                        "<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        "  <head>\n" +
-                        "    <title>Simple Map</title>\n" +
-                        "    <meta name=\"viewport\" content=\"initial-scale=1.0\">\n" +
-                        "    <meta charset=\"utf-8\">\n" +
-                        "    <style>\n" +
-                        "      /* Always set the map height explicitly to define the size of the div\n" +
-                        "       * element that contains the map. */\n" +
-                        "      #map {\n" +
-                        "        height: 100%;\n" +
-                        "      }\n" +
-                        "      /* Optional: Makes the sample page fill the window. */\n" +
-                        "      html, body {\n" +
-                        "        height: 100%;\n" +
-                        "        margin: 0;\n" +
-                        "        padding: 0;\n" +
-                        "      }\n" +
-                        "    </style>\n" +
-                        "  </head>\n" +
-                        "  <body>\n" +
-                        "    <div id=\"map\"></div>\n" +
-                        "    <script>\n" +                               
-                        "      var map;\n" +
-                        "      function initMap() {\n" +
-                        "        var origin = {lat: "+ loc.getLatitude() + ", lng: "  + loc.getLongitude() + "};\n" +
-                        "        map = new google.maps.Map(document.getElementById('map'), {\n" +
-                        "          center: origin,\n" +
-                        "          zoom: 8\n" +
-                        "        });\n" +
-                        "        var clickHandler = new ClickEventHandler(map, origin);\n" +
-                        "      }\n" +
-                        "      var ClickEventHandler = function(map, origin) {\n" +
-                        "        var self = this;\n" +
-                        "        this.origin = origin;\n" +
-                        "        this.map = map;\n" +
-                        "        //this.directionsService = new google.maps.DirectionsService;\n" +
-                        "        //this.directionsDisplay = new google.maps.DirectionsRenderer;\n" +
-                        "        //this.directionsDisplay.setMap(map);\n" +
-                        "        //this.placesService = new google.maps.places.PlacesService(map);\n" +
-                        "        //this.infowindow = new google.maps.InfoWindow;\n" +
-                        "        //this.infowindowContent = document.getElementById('infowindow-content');\n" +
-                        "        //this.infowindow.setContent(this.infowindowContent);\n" +
-                        "\n" +
-//                        "        google.maps.event.addListener(this.map, 'click', function(evt) {\n" +
-//                        "           self.handleClick(evt);\n" +
-//                        "        });" +
-                                "this.map.addListener('click', this.handleClick.bind(this));\n" +
-                        "      };\n" +
-                        "      ClickEventHandler.prototype.handleClick = function(event) {\n" + 
-                        "           //document.getElementById('map').innerHTML = 'foobar';\n" +
-                        "           cn1OnClickCallback(event);" +
-                        "      };\n" +
-                        "    </script>\n" +
-                        "    <script src=\"https://maps.googleapis.com/maps/api/js?key=" + 
-                        htmlApiKey +
-                        "&callback=initMap\"\n" +
-                        "    async defer></script>\n" +
-                        "  </body>\n" +
-                        "</html>", "/");
-            browserContext = new JavascriptContext(internalBrowser);
-            internalBrowser.addWebEventListener("onLoad", new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    JSObject window = (JSObject)browserContext.get("window");
-                    window.set("cn1OnClickCallback", new JSFunction() {
-                        public void apply(JSObject self, Object[] args) {
-                            Log.p("Click");
-                        }
-                    });
-                }
-            });
+            initBrowserComponent(htmlApiKey);
+            
             addComponent(BorderLayout.CENTER, internalBrowser);
         }
         setRotateGestureEnabled(true);
+    }
+
+    private void initBrowserComponent(String htmlApiKey) {
+        Location loc = LocationManager.getLocationManager().getLastKnownLocation();
+        internalBrowser.setPage(
+                    "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "  <head>\n" +
+                    "    <title>Simple Map</title>\n" +
+                    "    <meta name=\"viewport\" content=\"initial-scale=1.0\">\n" +
+                    "    <meta charset=\"utf-8\">\n" +
+                    "    <style>\n" +
+                    "      /* Always set the map height explicitly to define the size of the div\n" +
+                    "       * element that contains the map. */\n" +
+                    "      #map {\n" +
+                    "        height: 100%;\n" +
+                    "      }\n" +
+                    "      /* Optional: Makes the sample page fill the window. */\n" +
+                    "      html, body {\n" +
+                    "        height: 100%;\n" +
+                    "        margin: 0;\n" +
+                    "        padding: 0;\n" +
+                    "      }\n" +
+                    "    </style>\n" +
+                    "  </head>\n" +
+                    "  <body>\n" +
+                    "    <div id=\"map\" onmouseup=\"cn1OnMouseUpCallback(event.clientX, event.clientY)\"></div>\n" +
+                    "    <script>\n" +                               
+                    "      var map;\n" +
+                    "      function addMarker(imageIcon, lati, lon, text, longText, callbackFunction) {\n" +
+                    "          var location = { lat: lati, lng: lon };\n" +
+                    "          var mark;\n" +
+                    "          if(imageIcon !== null && imageIcon !== 'undefined') {\n" +
+                    "              mark = new google.maps.Marker({\n" +
+                    "                  position : location,\n" +
+                    "                  label : text,\n" +
+                    "                  map : map,\n" +
+                    "                  icon : imageIcon\n" +
+                    "              });\n" +
+                    "          } else {\n" +
+                    "              mark = new google.maps.Marker({\n" +
+                    "                  position : location,\n" +
+                    "                  label : text,\n" +
+                    "                  map : map\n" +
+                    "              });\n" +
+                    "          }\n" +
+                    "          var marker = mark;\n" +
+                    "          if(longText !== null && longText !== 'undefined') {\n" +
+                    "               var infowindow = new google.maps.InfoWindow({\n" +
+                    "                    content: longText\n" +
+                    "               });\n" +
+                    "               marker.addListener('click', function() {\n" +
+                    "                    infowindow.open(map, marker);\n" +
+                    "               });\n" +
+                    "          }\n" +
+                    "          if(callbackFunction !== null && callbackFunction !== 'undefined') {\n" +
+                    "              marker.addListener('click', callbackFunction);\n" +
+                    "          }\n" +
+                    "      }\n" +
+                    "      function initMap() {\n" +
+                    "        var origin = {lat: "+ loc.getLatitude() + ", lng: "  + loc.getLongitude() + "};\n" +
+                    "        map = new google.maps.Map(document.getElementById('map'), {\n" +
+                    "          center: origin,\n" +
+                    "          zoom: 8\n" +
+                    "        });\n" +
+                    "        var clickHandler = new ClickEventHandler(map, origin);\n" +
+                    "      }\n" +
+                    "      var ClickEventHandler = function(map, origin) {\n" +
+                    "        var self = this;\n" +
+                    "        this.origin = origin;\n" +
+                    "        this.map = map;\n" +
+                    "        //this.directionsService = new google.maps.DirectionsService;\n" +
+                    "        //this.directionsDisplay = new google.maps.DirectionsRenderer;\n" +
+                    "        //this.directionsDisplay.setMap(map);\n" +
+                    "        //this.placesService = new google.maps.places.PlacesService(map);\n" +
+                    "        //this.infowindow = new google.maps.InfoWindow;\n" +
+                    "        //this.infowindowContent = document.getElementById('infowindow-content');\n" +
+                    "        //this.infowindow.setContent(this.infowindowContent);\n" +
+                    "\n" +
+//                        "        google.maps.event.addListener(this.map, 'click', function(evt) {\n" +
+//                        "           self.handleClick(evt);\n" +
+//                        "        });" +
+                            "this.map.addListener('click', this.handleClick.bind(this));\n" +
+                    "      };\n" +
+                    "      ClickEventHandler.prototype.handleClick = function(event) {\n" + 
+                    "           //document.getElementById('map').innerHTML = 'foobar';\n" +
+                    "           cn1OnClickCallback(event);" +
+                    "      };\n" +
+                    "    </script>\n" +
+                    "    <script src=\"https://maps.googleapis.com/maps/api/js?key=" + 
+                    htmlApiKey +
+                    "&callback=initMap\"\n" +
+                    "    async defer></script>\n" +
+                    "  </body>\n" +
+                    "</html>", "/");
+        browserContext = new JavascriptContext(internalBrowser);
+        internalBrowser.addWebEventListener("onLoad", new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                JSObject window = (JSObject)browserContext.get("window");
+                window.set("cn1OnClickCallback", new JSFunction() {
+                    public void apply(JSObject self, Object[] args) {
+                        JSObject jo = (JSObject)args[0];
+                         jo = (JSObject)jo.getObject("latLng");
+                        Log.p("lat: " + jo.callDouble("lat"));
+                        Log.p("lng: " + jo.callDouble("lng"));
+                    }
+                });
+                window.set("cn1OnMouseUpCallback", new JSFunction() {
+                    public void apply(JSObject self, Object[] args) {
+                        fireTapEvent(((Double)args[0]).intValue(), ((Double)args[1]).intValue());
+                    }
+                });
+            }
+        });
     }
     
     static void mapUpdated(int mapId) {
@@ -324,7 +366,7 @@ public class MapContainer extends Container {
      * @param onClick will be invoked when the user clicks the marker. Important: events are only sent when the native map is in initialized state
      * @return marker reference object that should be used when removing the marker
      */
-    public MapObject addMarker(EncodedImage icon, Coord location, String text, String longText, ActionListener onClick) {
+    public MapObject addMarker(EncodedImage icon, Coord location, String text, String longText, final ActionListener onClick) {
         if(internalNative != null) {
             byte[] iconData = null;
             if(icon != null) {
@@ -363,7 +405,17 @@ public class MapContainer extends Container {
                     return o;
                 } 
             } else {
-                // TODO: Browser component
+                JSObject window = (JSObject)browserContext.get("window");
+                JSObject func = window.getObject("addMarker");
+                String uri = null;
+                if(icon != null) {
+                    uri = WebBrowser.createDataURI(icon.getImageData(), "image/png");
+                } 
+                func.call(new Object[] {uri, location.getLatitude(), location.getLongitude(), text, longText, new JSFunction() {
+                    public void apply(JSObject self, Object[] args) {
+                        onClick.actionPerformed(new ActionEvent(MapContainer.this));
+                    }
+                }});                
             }
         }
         return null;
