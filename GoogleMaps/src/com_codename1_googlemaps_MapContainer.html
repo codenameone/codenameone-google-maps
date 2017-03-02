@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <title>Map Container</title>
+      <script>
+          if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}
+    </script>
+                  
+    <style type="text/css">
+        #map {
+            height: 100%;
+            width: 100%;
+            
+        }
+        html, body {
+            height: 100%;
+            padding: 0;
+            margin: 0;     
+        }
+        
+        /* Dummy CSS to fix bug in JavaFX webview that caused gibberish display */
+        .gm-style-mtc > div, .gm-style > div, .gm-style-cc > div, .gm-style {font-family:sans-serif !important;}
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+        (function() {
+            
+            /**
+             * Map type for native maps
+             */
+            var MAP_TYPE_TERRAIN = 1;
+
+            /**
+             * Map type for native maps
+             */
+            var MAP_TYPE_HYBRID = 2;
+
+            /**
+             * Map type for native maps
+             */
+            var MAP_TYPE_NONE = 3;
+            
+            // We seem to get a race condition in chrome if we 
+            // initialize the map before the element is added to the dom.
+            // Therefore we set a timeout when first initializing the map 
+            // But now we need to wait until this initialization happens before
+            // subsequent calls on the map will work so we wrap any calls
+            // that need to access the map in this function
+            function ready(self, callback) {
+                if (window.com_codename1_googlemaps_MapContainer_onReady !== undefined) {
+                    var ref = window.com_codename1_googlemaps_MapContainer_onReady;
+                    window.com_codename1_googlemaps_MapContainer_onReady = undefined;
+                    console.log("Setting bridge to "+window.com_codename1_googlemaps_MapContainer_bridge);
+                    ref(window.com_codename1_googlemaps_MapContainer_bridge);
+                }
+                console.log("Ready ");
+                console.log(callback);
+                console.log(self);
+                if (self.initialized || callback === undefined) {
+                    if (self.onInitialized !== undefined) {
+                        while (self.onInitialized.length > 0) {
+                            (self.onInitialized.shift()).apply(self);
+                        }
+                    }
+                    if (callback !== undefined) {
+                        callback.apply(self);
+                    }
+                } else {
+                    self.onInitialized = self.onInitialized || [];
+
+                    self.onInitialized.push(callback);
+                }
+            }
+            
+            var bridge = {
+                
+                toString : function() {
+                    return 'the bridge';
+                },
+                
+                calcLatLngPosition: function(x, y) {
+                    this.lastPosition = null;
+                    this.ready(function() {
+                        // retrieve the lat lng for the far extremities of the (visible) map
+                        var latLngBounds = this.map.getBounds();
+                        var neBound = latLngBounds.getNorthEast();
+                        var swBound = latLngBounds.getSouthWest();
+
+                        // convert the bounds in pixels
+                        var neBoundInPx = this.map.getProjection().fromLatLngToPoint(neBound);
+                        var swBoundInPx = this.map.getProjection().fromLatLngToPoint(swBound);
+
+                        // compute the percent of x and y coordinates related to the div containing the map; in my case the screen
+                        //var procX = x/jQuery(this.el).width();
+                        var procX = x/document.getElementById('map').getBoundingClientRect().width;
+                        var procY = y/document.getElementById('map').getBoundingClientRect().height;
+
+                        // compute new coordinates in pixels for lat and lng;
+                        // for lng : subtract from the right edge of the container the left edge, 
+                        // multiply it by the percentage where the x coordinate was on the screen
+                        // related to the container in which the map is placed and add back the left boundary
+                        // you should now have the Lng coordinate in pixels
+                        // do the same for lat
+                        var newLngInPx = (neBoundInPx.x - swBoundInPx.x) * procX + swBoundInPx.x;
+                        var newLatInPx = (swBoundInPx.y - neBoundInPx.y) * procY + neBoundInPx.y;
+
+                        // convert from google point in lat lng and have fun :)
+                        var newLatLng = this.map.getProjection().fromPointToLatLng(new google.maps.Point(newLngInPx, newLatInPx));
+
+                        //this.lastPosition = this.map.getProjection().fromPointToLatLng(new google.maps.Point(param1, param2));
+                        this.lastPosition = newLatLng;
+                    });
+                },
+                
+                calcScreenPosition: function(lat, lon) {
+                    this.lastPoint = null;
+                    this.ready(function() {
+                        this.lastPoint = this.map.getProjection().fromLatLngToPoint(new google.maps.LatLng(lat, lon));
+                        
+                    });
+                },
+                addMarker : function(imageIcon, lat, lon, text, longText){
+                    var key = 0;
+                    this.ready(function() {
+                        var google = window.google;
+                        var self = this;
+                        var markerOpts = {
+                            icon : imageIcon,
+                            map : this.map,
+                            position : new google.maps.LatLng(lat, lon),
+                            title : text
+                        };
+
+                        key = this.uniqueIdCounter++;
+                        this.markerLookup = this.markerLookup || {};
+
+                        var marker = new google.maps.Marker(markerOpts);
+
+                        google.maps.event.addListener(marker, 'click', function() {
+                            self.fireMarkerEvent(key);
+                        });
+
+                        this.markerLookup[key] = marker;
+                        console.log(this.markerLookup);
+                        
+                    });
+                    return key;
+                },
+                
+                removeMapElement : function(key) {
+                    this.ready(function() {
+                        this.paths = this.paths || {};
+                        var line = this.paths[key];
+                        if (line) {
+                            delete this.paths[key];
+                            line.setMap(null);
+                        }
+                        this.markerLookup = this.markerLookup || {};
+                        var marker = this.markerLookup[key];
+                        if (marker) {
+                            delete this.markerLookup[key];
+                            marker.setMap(null);
+                        }
+                    });
+                },
+                
+                
+                removeAllMarkers : function() {
+                    this.ready(function() {
+                        var toRemove = [];
+                        var self = this;
+                        this.markerLookup = this.markerLookup || {};
+                        for (var key in this.markerLookup) {
+                            self.markerLookup[key].setMap(null);
+                            toRemove.push(key);
+                        }
+                        for (var i=0; i<toRemove.length; i++) {
+                            delete this.markerLookup[toRemove[i]];
+                        }
+                        toRemove = [];
+                        this.paths = this.paths || {};
+                        for (var key in this.paths) {
+                            this.paths[key].setMap(null);
+                            toRemove.push(key);
+                        }
+                        for (var i=0; i<toRemove.length; i++) {
+                            delete this.paths[toRemove[i]];
+                        }
+
+                    });
+                },
+                // Will be overridden on init.  Just here to declare API
+                fireMarkerEvent: function(key){},
+                
+                addPathAsJSON: function(coordsJSON){
+                    var out = 0;
+                    this.ready(function() {
+                        var id = this.uniqueIdCounter++;
+                        this.paths = this.paths || {};
+
+                        //callback.complete(id);
+
+                        var coords = JSON.parse(coordsJSON);
+                        var path = [];
+                        coords.forEach(function(coord) {
+                            path.push(new google.maps.LatLng(coord.lat, coord.lon));
+                        });
+
+                        this.paths[id] = new google.maps.Polyline({path: path});
+                        this.paths[id].setMap(this.map);
+                        out = id;
+                    });
+                    
+                    return out;
+                },
+                
+                getMaxZoom: function(){
+                    
+                    var out = 15;
+                    try {
+                        this.ready(function() {
+                            out = this.map.mapTypes.get(this.map.getMapTypeId()).maxZoom;
+                        });
+                    } catch (ex) {
+                        window.MapContainer_lastException = ex;
+                    }
+                    
+                    return out;
+                },
+                getMinZoom: function(){
+                    return 1;
+                },
+                clearMapLayers: function(){},
+                zoom: function(lat, lon, zoom){
+                    
+                    this.ready(function(){
+                        this.map.setCenter(new google.maps.LatLng(lat, lon));
+                        this.map.setZoom(zoom);
+                    });
+                },
+                getZoom: function(){
+                    var out = 8;
+                    this.ready(function() {
+                        out = this.map.getZoom();
+                    });
+                    return out;
+                },
+                setMapType: function(type){
+                    
+                    this.ready(function() {
+                        switch (type) {
+                            case MAP_TYPE_HYBRID :
+                                this.map.setMapTypeId(google.maps.MapTypeId.HYBRID); break;
+                            case MAP_TYPE_TERRAIN :
+                                this.map.setMapTypeId(google.maps.MapTypeId.TERRAIN); break;
+                            default :
+                                this.map.setMapTypeId(google.maps.MapTypeId.ROADMAP); break;
+                        }
+                    });
+                    
+                },
+                getMapType: function(){
+                    var type = MAP_TYPE_NONE;
+                    this.ready(function() {
+                        switch (this.map.getMapTypeId()) {
+                            case google.maps.MapTypeId.HYBRID :
+                                type = MAP_TYPE_HYBRID; break;
+                            case google.maps.MapTypeId.TERRAIN :
+                            case google.maps.MapTypeId.SATELLITE:
+                                type = MAP_TYPE_TERRAIN; break;
+                            default :
+                                type = MAP_TYPE_NONE;
+
+                        }
+                    });
+                    return type;
+                    
+                },
+                
+                setCameraPosition: function(lat, lon){
+                    this.ready(function(){
+                        this.map.setCenter(new google.maps.LatLng(lat, lon));
+                    });
+                },
+                
+                getCameraPosition: function(){
+                    var out = '0 0';
+                    this.ready(function() {
+                        out = this.map.getCenter().lat() + ' ' + this.map.getCenter().lng();
+                        
+                    });
+                    return out;
+                },
+                getCoordAtPosition: function(x, y){
+                    var out = '0 0';
+                    this.calcLatLngPosition(x, y);
+                    if (this.lastPosition !== null) {
+                        out = this.lastPosition.lat() + ' ' + this.lastPosition.lng();
+                    }
+                    return out;
+                },
+                getScreenCoord: function(lat, lon){
+                    var out = '0 0';
+                    this.ready(function() {
+                        this.calcScreenPosition(lat, lon);
+                        out = this.lastPoint.x + ' '+ this.lastPoint.y
+                    });
+                    return out;
+                },
+                ready: function(callback) {
+                    ready(this, callback);
+                }
+            };
+            
+            window.bridge_proto = bridge;
+            try {
+                window.com_codename1_googlemaps_MapContainer_bridge = Object.create(bridge, {
+                    initialized:{value: false, writable: true, enumerable: true}, 
+                    map: {value: null, writable: true},
+                    uniqueCounterId: {value: 0, writable: true}
+                });
+            } catch (ex) {
+                window.ex = ex;
+            }
+            window.here = 2;
+        })();
+            
+      
+      function initMap() {
+        var bridge = window.com_codename1_googlemaps_MapContainer_bridge;
+        
+        var google = window.google;
+        var origin = {lat: -34.397, lng: 150.644};
+        
+        // Leave the following commented-out line here.  It is replaced
+        // by mapcontainer with the actual origin at runtime.
+        //origin = MAPCONTAINER_ORIGIN
+        
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: origin,
+          scrollwheel: false,
+          zoom: 8
+        });
+        bridge.map = map;
+        
+        
+        
+        // Gets the callback object for the map container.
+        // This will be assigned at runtime by MapContainer in the onLoad
+        // event.  Until then it will just return a stub object with
+        // the same methods defined as dummy stubs.
+        var getMapContainer = function() {
+            if (!window.com_codename1_googlemaps_MapContainer) {
+                return {
+                    fireMapChangeEvent : function(zoom, lat, lon){},
+                    fireTapEvent : function(x, y){},
+                    fireMarkerEvent : function(key){}
+                };
+            }
+            return window.com_codename1_googlemaps_MapContainer;
+        }
+        
+        // Inform the MapContainer that the map has changed either its
+        // zoom or center.
+        var pendingMapChangeEvent = null;
+        
+        var fireMapChangeEvent = function(zoom, lat, lon) {
+            // To prevent flooding the JS bridge with events faster than we can handle them, we
+            // throttle these change events here
+            if (pendingMapChangeEvent === null) {
+                setTimeout(function() {
+                    var evt = pendingMapChangeEvent;
+                    pendingMapChangeEvent = null;
+                    getMapContainer().fireMapChangeEvent(evt.zoom, evt.lat, evt.lon);
+                }, 100);
+            }
+            pendingMapChangeEvent = {
+                zoom:zoom,
+                lat:lat,
+                lon:lon
+            };
+            
+        };
+        
+        // Inform the MapContainer that the map has been tapped
+        var fireTapEvent = function(x, y) {
+            getMapContainer().fireTapEvent(x, y);
+        };
+        
+        var fireMarkerEvent = function(key) {
+            getMapContainer().fireMarkerEvent(key);
+        };
+        bridge.fireMarkerEvent = fireMarkerEvent;
+        // Add listeners to the map
+        
+        google.maps.event.addListener(map, 'click', function(evt) {
+            //Point p = mapInstance.getProjection().toScreenLocation(point);
+            //MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
+            var p = map.getProjection().fromLatLngToPoint(evt.latLng);
+            fireTapEvent(p.x, p.y);
+
+        });
+        google.maps.event.addListener(map, 'bounds_changed', function() {
+            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+        });
+        google.maps.event.addListener(map, 'center_changed', function() {
+            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+        });
+        google.maps.event.addListener(map, 'zoom_changed', function() {
+            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+        });
+        google.maps.event.addListener(map, 'tilt_changed', function() {
+            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+        });
+        google.maps.event.addListener(map, 'heading_changed', function() {
+            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+        });
+        bridge.initialized = true;
+        bridge.ready();
+      }
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"
+    async defer></script>
+  </body>
+</html>
