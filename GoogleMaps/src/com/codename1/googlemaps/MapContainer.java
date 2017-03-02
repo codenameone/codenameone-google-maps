@@ -19,11 +19,13 @@ package com.codename1.googlemaps;
 
 import com.codename1.components.WebBrowser;
 import com.codename1.io.Log;
+import com.codename1.io.Util;
 import com.codename1.javascript.JSFunction;
 import com.codename1.javascript.JSObject;
 import com.codename1.javascript.JavascriptContext;
 import com.codename1.location.Location;
 import com.codename1.location.LocationManager;
+import com.codename1.maps.BoundingBox;
 import com.codename1.maps.Coord;
 import com.codename1.maps.MapComponent;
 import com.codename1.maps.MapListener;
@@ -43,8 +45,11 @@ import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Point;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.util.EventDispatcher;
+import com.codename1.util.StringUtil;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * An abstract Map API that encapsulates the device native map and seamlessly replaces
@@ -110,11 +115,12 @@ public class MapContainer extends Container {
      */
     @Override
     protected void deinitialize() {
-        super.deinitialize();
         instances.remove(mapId);
         if(internalNative != null) {
             internalNative.deinitialize();
         }
+        super.deinitialize();
+        
     }
     
     /**
@@ -150,8 +156,12 @@ public class MapContainer extends Container {
                 
                 // can happen if Google play services failed or aren't installed on an Android device
                 if(p != null) {
+                    System.out.println("Adding native map "+p);
+                    
                     addComponent(BorderLayout.CENTER, p);
                     return;
+                } else {
+                    System.out.println("Failed to add native map");
                 }
             } 
             internalNative = null;
@@ -190,6 +200,8 @@ public class MapContainer extends Container {
             addComponent(BorderLayout.CENTER, internalLightweightCmp);
         } else {
             internalBrowser = new BrowserComponent();
+            internalBrowser.getAllStyles().setPadding(0,0,0,0);
+            internalBrowser.getAllStyles().setMargin(0,0,0,0);
 
             initBrowserComponent(htmlApiKey);
             
@@ -198,118 +210,136 @@ public class MapContainer extends Container {
         setRotateGestureEnabled(true);
     }
 
-    private void initBrowserComponent(String htmlApiKey) {
-        Location loc = LocationManager.getLocationManager().getLastKnownLocation();
-        internalBrowser.setPage(
-                    "<!DOCTYPE html>\n" +
-                    "<html>\n" +
-                    "  <head>\n" +
-                    "    <title>Simple Map</title>\n" +
-                    "    <meta name=\"viewport\" content=\"initial-scale=1.0\">\n" +
-                    "    <meta charset=\"utf-8\">\n" +
-                    "    <style>\n" +
-                    "      /* Always set the map height explicitly to define the size of the div\n" +
-                    "       * element that contains the map. */\n" +
-                    "      #map {\n" +
-                    "        height: 100%;\n" +
-                    "      }\n" +
-                    "      /* Optional: Makes the sample page fill the window. */\n" +
-                    "      html, body {\n" +
-                    "        height: 100%;\n" +
-                    "        margin: 0;\n" +
-                    "        padding: 0;\n" +
-                    "      }\n" +
-                    "    </style>\n" +
-                    "  </head>\n" +
-                    "  <body>\n" +
-                    "    <div id=\"map\" onmouseup=\"cn1OnMouseUpCallback(event.clientX, event.clientY)\"></div>\n" +
-                    "    <script>\n" +                               
-                    "      var map;\n" +
-                    "      function addMarker(imageIcon, lati, lon, text, longText, callbackFunction) {\n" +
-                    "          var location = { lat: lati, lng: lon };\n" +
-                    "          var mark;\n" +
-                    "          if(imageIcon !== null && imageIcon !== 'undefined') {\n" +
-                    "              mark = new google.maps.Marker({\n" +
-                    "                  position : location,\n" +
-                    "                  label : text,\n" +
-                    "                  map : map,\n" +
-                    "                  icon : imageIcon\n" +
-                    "              });\n" +
-                    "          } else {\n" +
-                    "              mark = new google.maps.Marker({\n" +
-                    "                  position : location,\n" +
-                    "                  label : text,\n" +
-                    "                  map : map\n" +
-                    "              });\n" +
-                    "          }\n" +
-                    "          var marker = mark;\n" +
-                    "          if(longText !== null && longText !== 'undefined') {\n" +
-                    "               var infowindow = new google.maps.InfoWindow({\n" +
-                    "                    content: longText\n" +
-                    "               });\n" +
-                    "               marker.addListener('click', function() {\n" +
-                    "                    infowindow.open(map, marker);\n" +
-                    "               });\n" +
-                    "          }\n" +
-                    "          if(callbackFunction !== null && callbackFunction !== 'undefined') {\n" +
-                    "              marker.addListener('click', callbackFunction);\n" +
-                    "          }\n" +
-                    "      }\n" +
-                    "      function initMap() {\n" +
-                    "        var origin = {lat: "+ loc.getLatitude() + ", lng: "  + loc.getLongitude() + "};\n" +
-                    "        map = new google.maps.Map(document.getElementById('map'), {\n" +
-                    "          center: origin,\n" +
-                    "          zoom: 8\n" +
-                    "        });\n" +
-                    "        var clickHandler = new ClickEventHandler(map, origin);\n" +
-                    "      }\n" +
-                    "      var ClickEventHandler = function(map, origin) {\n" +
-                    "        var self = this;\n" +
-                    "        this.origin = origin;\n" +
-                    "        this.map = map;\n" +
-                    "        //this.directionsService = new google.maps.DirectionsService;\n" +
-                    "        //this.directionsDisplay = new google.maps.DirectionsRenderer;\n" +
-                    "        //this.directionsDisplay.setMap(map);\n" +
-                    "        //this.placesService = new google.maps.places.PlacesService(map);\n" +
-                    "        //this.infowindow = new google.maps.InfoWindow;\n" +
-                    "        //this.infowindowContent = document.getElementById('infowindow-content');\n" +
-                    "        //this.infowindow.setContent(this.infowindowContent);\n" +
-                    "\n" +
-//                        "        google.maps.event.addListener(this.map, 'click', function(evt) {\n" +
-//                        "           self.handleClick(evt);\n" +
-//                        "        });" +
-                            "this.map.addListener('click', this.handleClick.bind(this));\n" +
-                    "      };\n" +
-                    "      ClickEventHandler.prototype.handleClick = function(event) {\n" + 
-                    "           //document.getElementById('map').innerHTML = 'foobar';\n" +
-                    "           cn1OnClickCallback(event);" +
-                    "      };\n" +
-                    "    </script>\n" +
-                    "    <script src=\"https://maps.googleapis.com/maps/api/js?key=" + 
-                    htmlApiKey +
-                    "&callback=initMap\"\n" +
-                    "    async defer></script>\n" +
-                    "  </body>\n" +
-                    "</html>", "/");
-        browserContext = new JavascriptContext(internalBrowser);
-        internalBrowser.addWebEventListener("onLoad", new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                JSObject window = (JSObject)browserContext.get("window");
-                window.set("cn1OnClickCallback", new JSFunction() {
-                    public void apply(JSObject self, Object[] args) {
-                        JSObject jo = (JSObject)args[0];
-                         jo = (JSObject)jo.getObject("latLng");
-                        Log.p("lat: " + jo.callDouble("lat"));
-                        Log.p("lng: " + jo.callDouble("lng"));
+    private BrowserBridge browserBridge = new BrowserBridge();
+    
+    private class BrowserBridge {
+        List<Runnable> onReady = new ArrayList<Runnable>();
+        private JSObject bridge;
+        
+        BrowserBridge() {
+            
+        }
+        
+        private void ready(Runnable r) {
+            if (bridge != null) {
+                if (!onReady.isEmpty()) {
+                    List<Runnable> tmp = new ArrayList<Runnable>();
+                    synchronized(onReady) {
+                        tmp.addAll(onReady);
+                        onReady.clear();
                     }
-                });
-                window.set("cn1OnMouseUpCallback", new JSFunction() {
-                    public void apply(JSObject self, Object[] args) {
-                        fireTapEvent(((Double)args[0]).intValue(), ((Double)args[1]).intValue());
+                    for (Runnable tr : tmp) {
+                        tr.run();
                     }
+                }
+                if (r != null) {
+                    r.run();
+                }
+            } else {
+                if (r == null) {
+                    return;
+                }
+                synchronized(onReady) {
+                    onReady.add(r);
+                }
+            }
+        }
+        
+        private void waitForReady() {
+            int ctr = 0;
+            while (bridge == null) {
+                if (ctr++ > 50) {
+                    throw new RuntimeException("Waited too long for browser bridge");
+                }
+                Display.getInstance().invokeAndBlock(new Runnable() {
+
+                    public void run() {
+                        try {
+                            Thread.sleep(20);
+                        } catch (Exception ex){}
+                    }
+                    
                 });
             }
-        });
+            
+        }
+    }
+    
+    private void initBrowserComponent(String htmlApiKey) {
+        
+        //System.out.println("About to check location");
+        Location loc = LocationManager.getLocationManager().getLastKnownLocation();
+        try {
+            //if (true)return;
+            //System.out.println("About to load map text");
+            String str = Util.readToString(Display.getInstance().getResourceAsStream(null, "/com_codename1_googlemaps_MapContainer.html"));
+            //System.out.println("Map text: "+str);
+            str = StringUtil.replaceAll(str, "YOUR_API_KEY", htmlApiKey);
+            //System.out.println("Finished setting API key");
+            str = StringUtil.replaceAll(str, "//origin = MAPCONTAINER_ORIGIN", "origin = {lat: "+ loc.getLatitude() + ", lng: "  + loc.getLongitude() + "};");
+            //System.out.println("Finished setting origin");
+            internalBrowser.setPage(str, "/");
+            internalBrowser.addWebEventListener("onLoad", new ActionListener() {
+
+                public void actionPerformed(ActionEvent evt) {
+                    JavascriptContext ctx = new JavascriptContext(internalBrowser);
+                    JSObject jsProxy = (JSObject)ctx.get("{}");
+                    jsProxy.set("fireTapEvent", new JSFunction() {
+
+                        public void apply(JSObject self, Object[] args) {
+                            fireTapEvent(((Double)args[0]).intValue(), ((Double)args[1]).intValue());
+                        }
+                    });
+                    
+                    jsProxy.set("fireMapChangeEvent", new JSFunction() {
+
+                        public void apply(JSObject self, Object[] args) {
+                            int zoom = ((Double)args[0]).intValue();
+                            double lat = (Double)args[1];
+                            double lon = (Double)args[2];
+                            fireMapListenerEvent(zoom, lat, lon);
+                        }
+                        
+                    });
+                    
+                    jsProxy.set("fireMarkerEvent", new JSFunction() {
+                        public void apply(JSObject self, Object[] args) {
+                            int key = ((Double)args[0]).intValue();
+                            fireMarkerEvent(key);
+                        }
+                    });
+                    
+                    JSObject window = (JSObject)ctx.get("window");
+                    window.set("com_codename1_googlemaps_MapContainer", jsProxy);
+                    System.out.println("About to load bridge");
+                    browserBridge.bridge = (JSObject)window.get("com_codename1_googlemaps_MapContainer_bridge");
+                    if (browserBridge.bridge != null) {
+                        System.out.println("BrowserBridge pointer at 307 is "+browserBridge.bridge.toJSPointer());
+                    }
+                    System.out.println("Bridge is "+browserBridge.bridge);
+                    if (browserBridge.bridge == null) {
+                        window.set("com_codename1_googlemaps_MapContainer_onReady", new JSFunction() {
+
+                            public void apply(JSObject self, Object[] args) {
+                                System.out.println("Browser bridge in JS onReady callback");
+                                browserBridge.bridge = (JSObject)args[0];
+                                System.out.println("Browser bridge pointer at 316 is "+browserBridge.bridge.toJSPointer());
+                            }
+
+                        });
+                    }
+                
+                    System.out.println("Bridge is ready");
+                    browserBridge.ready(null);
+                }
+            });
+            
+            
+            return;
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
     }
     
     static void mapUpdated(int mapId) {
@@ -405,18 +435,26 @@ public class MapContainer extends Container {
                     return o;
                 } 
             } else {
-                JSObject window = (JSObject)browserContext.get("window");
-                JSObject func = window.getObject("addMarker");
+                
                 String uri = null;
                 if(icon != null) {
                     uri = WebBrowser.createDataURI(icon.getImageData(), "image/png");
                 } 
-                func.call(new Object[] {uri, location.getLatitude(), location.getLongitude(), text, longText, new JSFunction() {
-                    public void apply(JSObject self, Object[] args) {
-                        onClick.actionPerformed(new ActionEvent(MapContainer.this));
-                    }
-                }});                
+                browserBridge.waitForReady();
+                long key = ((Double)browserBridge.bridge.call("addMarker", new Object[]{
+                    uri,
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    text,
+                    longText
+                })).intValue();
+                MapObject o = new MapObject();
+                o.mapKey = key;
+                o.callback = onClick;
+                markers.add(o);
+                return o;
             }
+            
         }
         return null;
     }
@@ -448,8 +486,26 @@ public class MapContainer extends Container {
                 markers.add(o);
                 return o;
             } else {
-                // TODO: Browser component                
-                return null;
+                browserBridge.waitForReady();
+                StringBuilder json = new StringBuilder();
+                json.append("[");
+                boolean first = true;
+                for(Coord c : path) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        json.append(", ");
+                    }
+                    json.append("{\"lat\":").append(c.getLatitude()).append(", \"lon\": ").append(c.getLongitude()).append("}");
+                }
+                json.append("]");
+                long key = ((Double)browserBridge.bridge.call("addPathAsJSON", new Object[]{json.toString()})).intValue();
+                
+                
+                MapObject o = new MapObject();
+                o.mapKey = key;
+                markers.add(o);
+                return o;
             }
         }
     }
@@ -464,8 +520,8 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getMaxZoomLevel();
             } else {
-                // TODO: Browser component
-                return 20;
+                browserBridge.waitForReady();
+                return browserBridge.bridge.callInt("getMaxZoom");
             }
         }
         return internalNative.getMaxZoom();
@@ -481,8 +537,8 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getMinZoomLevel();
             } else {
-                // TODO: Browser component
-                return 1;
+                browserBridge.waitForReady();
+                return browserBridge.bridge.callInt("getMinZoom");
             }
         }
         return internalNative.getMinZoom();
@@ -501,7 +557,9 @@ public class MapContainer extends Container {
                 if(internalLightweightCmp != null) {
                     internalLightweightCmp.removeLayer(obj.lines);
                 } else {
-                    // TODO: Browser component
+                    browserBridge.waitForReady();
+                    browserBridge.bridge.call("removeMapElement", new Object[]{obj.mapKey});
+                    
                 }
             } else {
                 points.removePoint(obj.point);
@@ -521,7 +579,9 @@ public class MapContainer extends Container {
                 internalLightweightCmp.removeAllLayers();
                 points = null;
             } else {
-                // TODO: Browser component                
+                browserBridge.waitForReady();
+                browserBridge.bridge.call("removeAllMarkers");
+                markers.clear();
             }
         }
     }
@@ -538,7 +598,9 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 internalLightweightCmp.zoomTo(crd, zoom);
             } else {
-                // TODO: Browser component                
+                browserBridge.waitForReady();
+                browserBridge.bridge.call("zoom", new Object[]{ crd.getLatitude(), crd.getLongitude(), zoom});
+                
             }
         }
     }
@@ -554,11 +616,19 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getZoomLevel();
             }
-            // TODO: Browser component
-            return 7;
+            browserBridge.waitForReady();
+            return browserBridge.bridge.callInt("getZoom");
+            
         }        
     }
 
+    public BoundingBox getBoundingBox() {
+        Coord sw = this.getCoordAtPosition(getAbsoluteX(), getAbsoluteY() + getHeight());
+        Coord ne = this.getCoordAtPosition(getAbsoluteX() + getWidth(), getAbsoluteY());
+        return new BoundingBox(sw, ne);
+        
+    }
+    
     /**
      * Sets the native map type to one of the MAP_TYPE constants
      * @param type one of the MAP_TYPE constants
@@ -566,6 +636,14 @@ public class MapContainer extends Container {
     public void setMapType(int type) {
         if(internalNative != null) {
             internalNative.setMapType(type);
+        } else {
+            if (internalLightweightCmp != null) {
+                
+            } else {
+                // browser component
+                browserBridge.waitForReady();
+                browserBridge.bridge.call("setMapType", new Object[]{type});
+            }
         }
     }
     
@@ -576,9 +654,14 @@ public class MapContainer extends Container {
     public int getMapType() {
         if(internalNative != null) {
             return internalNative.getMapType();
-        }        
+        } else if (browserBridge != null) {
+            browserBridge.waitForReady();
+            return browserBridge.bridge.callInt("getMapType");
+        }       
         return MAP_TYPE_NONE;
     }
+    
+    
     
     /**
      * Position the map camera
@@ -589,7 +672,11 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 internalLightweightCmp.zoomTo(crd, internalLightweightCmp.getZoomLevel());
             } else {
-                // TODO: Browser component                
+                browserBridge.waitForReady();
+                browserBridge.bridge.call(
+                        "setCameraPosition", 
+                        new Object[]{crd.getLatitude(), crd.getLongitude()}
+                );
             }
             return;
         }
@@ -604,9 +691,20 @@ public class MapContainer extends Container {
         if(internalNative == null) {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getCenter();
-            } 
-            // TODO: Browser component
-            return new Coord(0, 0);
+            } else {
+                browserBridge.waitForReady();
+                String pos = browserBridge.bridge.callString("getCameraPosition");
+                try {
+                    String latStr = pos.substring(0, pos.indexOf(" "));
+                    String lnStr = pos.substring(pos.indexOf(" ")+1);
+                    return new Coord(Double.parseDouble(latStr), Double.parseDouble(lnStr));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    return new Coord(0, 0);
+                }
+                
+            }
+
         }
         return new Coord(internalNative.getLatitude(), internalNative.getLongitude());
     }
@@ -622,7 +720,22 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getCoordFromPosition(x, y);
             }
-            // TODO: Browser component
+            browserBridge.waitForReady();
+            x -= internalBrowser.getAbsoluteX();
+            y -= internalBrowser.getAbsoluteY();
+            System.out.println("Browser bridge pointer here is "+browserBridge.bridge.toJSPointer());
+            Object res = browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
+            if (res instanceof Double) {
+                int i = 0;
+            }
+            String coord = (String)browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
+            try {
+                String xStr = coord.substring(0, coord.indexOf(" "));
+                String yStr = coord.substring(coord.indexOf(" ")+1);
+                return new Coord(Double.parseDouble(xStr), Double.parseDouble(yStr));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             return new Coord(0, 0);
         }
         internalNative.calcLatLongPosition(x, y);
@@ -640,7 +753,19 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getPointFromCoord(new Coord(lat, lon));
             }
-            // TODO: Browser component
+            browserBridge.waitForReady();
+            String coord = (String)browserBridge.bridge.call("getScreenCoord", new Object[]{lat, lon});
+            try {
+                String xStr = coord.substring(0, coord.indexOf(" "));
+                String yStr = coord.substring(coord.indexOf(" ")+1);
+                return new Point(
+                        (int)Double.parseDouble(xStr) + internalBrowser.getAbsoluteX(), 
+                        (int)Double.parseDouble(yStr) + internalBrowser.getAbsoluteY()
+                );
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            
             return new Point(0, 0);
         }
         internalNative.calcScreenPosition(lat, lon);
@@ -708,11 +833,8 @@ public class MapContainer extends Container {
     }
     
     private void fireTapEvent(int x, int y) { 
-        final MapContainer mc = instances.get(mapId);
-        if(mc != null) {
-            if(tapListener != null) {
-                tapListener.fireActionEvent(new ActionEvent(this, x, y));
-            }
+        if(tapListener != null) {
+            tapListener.fireActionEvent(new ActionEvent(this, x, y));
         }
     }
     
@@ -769,12 +891,8 @@ public class MapContainer extends Container {
      * @param listener the listener callback
      */
     public void addMapListener(MapListener listener) {
-        if(internalNative == null) {
-            if(internalLightweightCmp != null) {
-                internalLightweightCmp.addMapListener(listener);
-            } else {
-                // TODO: Browser component                
-            }
+        if(internalNative == null && internalLightweightCmp != null) {
+            internalLightweightCmp.addMapListener(listener);
             return;
         }
         if(listeners == null) {
@@ -788,12 +906,8 @@ public class MapContainer extends Container {
      * @param listener the listener
      */
     public void removeMapListener(MapListener listener) {
-        if(internalNative == null) {
-            if(internalLightweightCmp != null) {
-                internalLightweightCmp.removeMapListener(listener);
-            } else {
-                // TODO: Browser component
-            }
+        if(internalNative == null && internalLightweightCmp != null) {
+            internalLightweightCmp.removeMapListener(listener);
             return;
         }
         if(listeners == null) {

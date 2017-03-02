@@ -44,7 +44,14 @@ var o = {};
 
     o.initialize_ = function(callback) {
         //jQuery('body').append(this.el);
-        callback.complete();
+        //ready(this, function() {
+            window.theMapEl = this.el;
+            //if (!this.el.parentNode) {
+                
+            //    window.document.body.appendChild(this.el);
+            //}
+            callback.complete();
+        //});
     };
 
     o.calcScreenPosition__double_double = function(param1, param2, callback) {
@@ -156,6 +163,9 @@ var o = {};
         var self = this;
         //jQuery(document).ready(function() {
         self.el = jQuery('<div id=\"cn1-googlemaps-canvas\"></div>').get(0);
+        if (self.el.parentNode !== null) {
+            self.el.parentNode.removeChild(self.el);
+        }
         var initialize = function(){
             
             self.mapId = param1;
@@ -321,6 +331,10 @@ var o = {};
     o.deinitialize_ = function(callback) {
         ready(this, function() {
             //jQuery(this.el).remove();
+            console.log("Deinitializing map");
+            if (this.el.parentNode) {
+                this.el.parentNode.removeChild(this.el);
+            }
             callback.complete();
         });
     };
