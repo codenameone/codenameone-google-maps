@@ -307,8 +307,6 @@ public class GoogleMapsTestApp {
         });
         
         cnt.addTapListener(e->{
-            System.out.println("Tap at "+e.getX()+", "+e.getY());
-            System.out.println("Coord position "+cnt.getCoordAtPosition(e.getX(), e.getY()));
             TextField enterName = new TextField();
             Container wrapper = BoxLayout.encloseY(new Label("Name:"), enterName);
             InteractionDialog dlg = new InteractionDialog("Add Marker");
