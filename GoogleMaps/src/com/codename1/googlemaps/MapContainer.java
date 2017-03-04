@@ -147,6 +147,12 @@ public class MapContainer extends Container {
      */
     private MapContainer(MapProvider provider, final String htmlApiKey) {
         super(new BorderLayout());
+        if (provider == null && "win".equals(Display.getInstance().getPlatformName())) {
+            
+            // Right now UWP gives an NPE when we use the internal browser
+            // so disabling it for now.
+            provider = new OpenStreetMapProvider();
+        }
         internalNative = (InternalNativeMaps)NativeLookup.create(InternalNativeMaps.class);
         if(internalNative != null) {
             if(internalNative.isSupported()) {
@@ -156,12 +162,12 @@ public class MapContainer extends Container {
                 
                 // can happen if Google play services failed or aren't installed on an Android device
                 if(p != null) {
-                    System.out.println("Adding native map "+p);
+                    //System.out.println("Adding native map "+p);
                     
                     addComponent(BorderLayout.CENTER, p);
                     return;
                 } else {
-                    System.out.println("Failed to add native map");
+                    //System.out.println("Failed to add native map");
                 }
             } 
             internalNative = null;
@@ -311,25 +317,25 @@ public class MapContainer extends Container {
                     
                     JSObject window = (JSObject)ctx.get("window");
                     window.set("com_codename1_googlemaps_MapContainer", jsProxy);
-                    System.out.println("About to load bridge");
+                    //System.out.println("About to load bridge");
                     browserBridge.bridge = (JSObject)window.get("com_codename1_googlemaps_MapContainer_bridge");
-                    if (browserBridge.bridge != null) {
-                        System.out.println("BrowserBridge pointer at 307 is "+browserBridge.bridge.toJSPointer());
-                    }
-                    System.out.println("Bridge is "+browserBridge.bridge);
+                    //if (browserBridge.bridge != null) {
+                    //    System.out.println("BrowserBridge pointer at 307 is "+browserBridge.bridge.toJSPointer());
+                    //}
+                    //System.out.println("Bridge is "+browserBridge.bridge);
                     if (browserBridge.bridge == null) {
                         window.set("com_codename1_googlemaps_MapContainer_onReady", new JSFunction() {
 
                             public void apply(JSObject self, Object[] args) {
-                                System.out.println("Browser bridge in JS onReady callback");
+                                //System.out.println("Browser bridge in JS onReady callback");
                                 browserBridge.bridge = (JSObject)args[0];
-                                System.out.println("Browser bridge pointer at 316 is "+browserBridge.bridge.toJSPointer());
+                                //System.out.println("Browser bridge pointer at 316 is "+browserBridge.bridge.toJSPointer());
                             }
 
                         });
                     }
                 
-                    System.out.println("Bridge is ready");
+                    ///System.out.println("Bridge is ready");
                     browserBridge.ready(null);
                 }
             });
@@ -723,7 +729,7 @@ public class MapContainer extends Container {
             browserBridge.waitForReady();
             x -= internalBrowser.getAbsoluteX();
             y -= internalBrowser.getAbsoluteY();
-            System.out.println("Browser bridge pointer here is "+browserBridge.bridge.toJSPointer());
+            //System.out.println("Browser bridge pointer here is "+browserBridge.bridge.toJSPointer());
             Object res = browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
             if (res instanceof Double) {
                 int i = 0;
