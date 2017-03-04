@@ -293,7 +293,7 @@ public class MapContainer extends Container {
                     jsProxy.set("fireTapEvent", new JSFunction() {
 
                         public void apply(JSObject self, Object[] args) {
-                            fireTapEvent(((Double)args[0]).intValue(), ((Double)args[1]).intValue());
+                            fireTapEvent(((Double)args[0]).intValue() + internalBrowser.getAbsoluteX(), ((Double)args[1]).intValue() + internalBrowser.getAbsoluteY());
                         }
                     });
                     
@@ -455,9 +455,11 @@ public class MapContainer extends Container {
                     longText
                 })).intValue();
                 MapObject o = new MapObject();
+                
                 o.mapKey = key;
                 o.callback = onClick;
                 markers.add(o);
+                //System.out.println("MapKey added "+o.mapKey);
                 return o;
             }
             
@@ -730,10 +732,10 @@ public class MapContainer extends Container {
             x -= internalBrowser.getAbsoluteX();
             y -= internalBrowser.getAbsoluteY();
             //System.out.println("Browser bridge pointer here is "+browserBridge.bridge.toJSPointer());
-            Object res = browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
-            if (res instanceof Double) {
-                int i = 0;
-            }
+            //Object res = browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
+            //if (res instanceof Double) {
+            //    int i = 0;
+            //}
             String coord = (String)browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
             try {
                 String xStr = coord.substring(0, coord.indexOf(" "));

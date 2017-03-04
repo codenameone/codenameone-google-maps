@@ -3,7 +3,7 @@
   <head>
       <title>Map Container</title>
       <script>
-          if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}
+          //if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}
     </script>
                   
     <style type="text/css">
@@ -26,7 +26,7 @@
     <div id="map"></div>
     <script>
         (function() {
-            
+            var uniqueIdCounter = 0;
             /**
              * Map type for native maps
              */
@@ -52,12 +52,12 @@
                 if (window.com_codename1_googlemaps_MapContainer_onReady !== undefined) {
                     var ref = window.com_codename1_googlemaps_MapContainer_onReady;
                     window.com_codename1_googlemaps_MapContainer_onReady = undefined;
-                    console.log("Setting bridge to "+window.com_codename1_googlemaps_MapContainer_bridge);
+                    //console.log("Setting bridge to "+window.com_codename1_googlemaps_MapContainer_bridge);
                     ref(window.com_codename1_googlemaps_MapContainer_bridge);
                 }
-                console.log("Ready ");
-                console.log(callback);
-                console.log(self);
+                //console.log("Ready ");
+                //console.log(callback);
+                //console.log(self);
                 if (self.initialized || callback === undefined) {
                     if (self.onInitialized !== undefined) {
                         while (self.onInitialized.length > 0) {
@@ -133,7 +133,8 @@
                             title : text
                         };
 
-                        key = this.uniqueIdCounter++;
+                        key = uniqueIdCounter++;
+                        //console.log("Setting key to "+key);
                         this.markerLookup = this.markerLookup || {};
 
                         var marker = new google.maps.Marker(markerOpts);
@@ -143,9 +144,10 @@
                         });
 
                         this.markerLookup[key] = marker;
-                        console.log(this.markerLookup);
+                        //console.log(this.markerLookup);
                         
                     });
+                    //console.log("Returning key "+key);
                     return key;
                 },
                 
@@ -197,7 +199,7 @@
                 addPathAsJSON: function(coordsJSON){
                     var out = 0;
                     this.ready(function() {
-                        var id = this.uniqueIdCounter++;
+                        var id = uniqueIdCounter++;
                         this.paths = this.paths || {};
 
                         //callback.complete(id);
@@ -384,6 +386,14 @@
             
         };
         
+        function fromLatLngToPoint(latLng, map) {
+            var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
+            var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
+            var scale = Math.pow(2, map.getZoom());
+            var worldPoint = map.getProjection().fromLatLngToPoint(latLng);
+            return new google.maps.Point((worldPoint.x - bottomLeft.x) * scale, (worldPoint.y - topRight.y) * scale);
+        }
+        
         // Inform the MapContainer that the map has been tapped
         var fireTapEvent = function(x, y) {
             getMapContainer().fireTapEvent(x, y);
@@ -398,7 +408,7 @@
         google.maps.event.addListener(map, 'click', function(evt) {
             //Point p = mapInstance.getProjection().toScreenLocation(point);
             //MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
-            var p = map.getProjection().fromLatLngToPoint(evt.latLng);
+            var p = fromLatLngToPoint(evt.latLng, map);
             fireTapEvent(p.x, p.y);
 
         });

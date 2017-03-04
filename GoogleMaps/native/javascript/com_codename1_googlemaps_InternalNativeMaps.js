@@ -17,6 +17,14 @@
     
     var uniqueIdCounter = 0;
     
+    function fromLatLngToPoint(latLng, map) {
+        var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
+        var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
+        var scale = Math.pow(2, map.getZoom());
+        var worldPoint = map.getProjection().fromLatLngToPoint(latLng);
+        return new google.maps.Point((worldPoint.x - bottomLeft.x) * scale, (worldPoint.y - topRight.y) * scale);
+    }
+    
     // We seem to get a race condition in chrome if we 
     // initialize the map before the element is added to the dom.
     // Therefore we set a timeout when first initializing the map 
@@ -182,7 +190,8 @@ var o = {};
             google.maps.event.addListener(self.map, 'click', function(evt) {
                 //Point p = mapInstance.getProjection().toScreenLocation(point);
                 //MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
-                var p = self.map.getProjection().fromLatLngToPoint(evt.latLng);
+                //var p = self.map.getProjection().fromLatLngToPoint(evt.latLng);
+                var p = fromLatLngToPoint(evt.Lng, self.map);
                 fireTapEventStatic(self.mapId, p.x, p.y);
 
             });
