@@ -191,7 +191,7 @@ var o = {};
                 //Point p = mapInstance.getProjection().toScreenLocation(point);
                 //MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
                 //var p = self.map.getProjection().fromLatLngToPoint(evt.latLng);
-                var p = fromLatLngToPoint(evt.Lng, self.map);
+                var p = fromLatLngToPoint(evt.latLng, self.map);
                 fireTapEventStatic(self.mapId, p.x, p.y);
 
             });
@@ -380,12 +380,25 @@ var o = {};
         ready(this, function() {
             var toRemove = [];
             var self = this;
-            for (var key in this.markerLookup) {
-                self.markerLookup[key].setMap(null);
-                toRemove.push(key);
+            if (this.markerLookup) {
+                for (var key in this.markerLookup) {
+                    self.markerLookup[key].setMap(null);
+                    toRemove.push(key);
+                }
             }
             for (var i=0; i<toRemove.length; i++) {
                 delete this.markerLookup[toRemove[i]];
+            }
+            
+            toRemove = [];
+            if (this.paths) {
+                for (var key in this.paths) {
+                    self.paths[key].setMap(null);
+                    toRemove.push(key);
+                }
+            }
+            for (var i=0; i<toRemove.length; i++) {
+                delete this.paths[toRemove[i]];
             }
             
             callback.complete();
