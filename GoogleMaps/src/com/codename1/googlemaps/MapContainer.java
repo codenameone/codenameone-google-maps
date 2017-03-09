@@ -570,7 +570,17 @@ public class MapContainer extends Container {
                     
                 }
             } else {
-                points.removePoint(obj.point);
+                if(internalLightweightCmp != null) {
+                    if (points != null) {
+                        points.removePoint(obj.point);
+                    }
+                } else {
+                    browserBridge.waitForReady();
+                    browserBridge.bridge.call("removeMapElement", new Object[]{obj.mapKey});
+                    
+                }
+                
+                
             }
         }
     }

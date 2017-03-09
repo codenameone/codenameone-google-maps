@@ -19,6 +19,7 @@ package com.codename1.test.googlemaps;
 import com.codename1.components.InteractionDialog;
 import com.codename1.components.ToastBar;
 import com.codename1.googlemaps.MapContainer;
+import com.codename1.googlemaps.MapContainer.MapObject;
 import com.codename1.maps.Coord;
 import com.codename1.ui.Button;
 import com.codename1.ui.Container;
@@ -56,7 +57,7 @@ public class GoogleMapsTestApp {
             e.printStackTrace();
         }
     }
-
+    MapObject sydney;
     public void start() {
         if (current != null) {
             current.show();
@@ -73,7 +74,7 @@ public class GoogleMapsTestApp {
         Style s = new Style();
         s.setFgColor(0xff0000);
         s.setBgTransparency(0);
-        FontImage markerImg = FontImage.createMaterial(FontImage.MATERIAL_PLACE, s, Display.getInstance().convertToPixels(3));
+        FontImage markerImg = FontImage.createMaterial(FontImage.MATERIAL_PLACE, s, 3);
         
         Button btnAddMarker = new Button("Add Marker");
         btnAddMarker.addActionListener(e->{
@@ -104,6 +105,16 @@ public class GoogleMapsTestApp {
             cnt.clearMapLayers();
         });
         
+        MapObject mo = cnt.addMarker(EncodedImage.createFromImage(markerImg, false), new Coord(-33.866, 151.195), "test", "test",e->{
+            System.out.println("Marker clicked");
+            cnt.removeMapObject(sydney);
+        });
+        sydney = mo;
+        System.out.println("MO is "+mo);
+        mo = cnt.addMarker(EncodedImage.createFromImage(markerImg, false), new Coord(-18.142, 178.431), "test", "test",e->{
+            System.out.println("Marker clicked");
+        });
+        System.out.println("MO is "+mo);
         cnt.addTapListener(e->{
             if (tapDisabled) {
                 return;
