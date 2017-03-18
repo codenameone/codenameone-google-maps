@@ -16,34 +16,30 @@
  */
 package com.codename1.googlemaps;
 
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.GoogleMap;
-import com.codename1.impl.android.AndroidNativeUtil;
-import java.util.HashMap;
-
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.LatLng;
-import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.view.ViewGroup;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.os.Bundle;
-import com.codename1.impl.android.AndroidImplementation;
-import com.codename1.impl.android.LifecycleListener;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.MapsInitializer;
 import android.os.Looper;
 import android.view.View;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.Polyline;
-import android.graphics.Point;
-//import com.codename1.impl.android.AndroidImplementation.PeerDraw;
+import android.view.ViewGroup;
+import com.codename1.impl.android.AndroidImplementation;
+import com.codename1.impl.android.AndroidNativeUtil;
+import com.codename1.impl.android.LifecycleListener;
 import com.codename1.io.Log;
-import com.codename1.ui.Display;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import java.util.HashMap;
 
 public class InternalNativeMapsImpl implements LifecycleListener {
     private int mapId;
@@ -155,7 +151,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             public void run() {
                 MarkerOptions mo = new MarkerOptions();
                 if(text != null) {
-                    mo.title(text);
+                    mo.title(text);         
                 }
                 if(icon != null) {
                     Bitmap bmp = BitmapFactory.decodeByteArray(icon, 0, icon.length);
@@ -165,8 +161,12 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                     mo.snippet(snippet);
                 }
                 mo.position(new LatLng(lat, lon));
-
+                
                 Marker m = mapInstance.addMarker(mo);
+                
+                if (text!=null)
+                    m.showInfoWindow();
+                
                 if(callback) {
                     listeners.put(m, key);
                 }

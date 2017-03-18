@@ -18,7 +18,6 @@
 package com.codename1.googlemaps;
 
 import com.codename1.components.WebBrowser;
-import com.codename1.io.Log;
 import com.codename1.io.Util;
 import com.codename1.javascript.JSFunction;
 import com.codename1.javascript.JSObject;
@@ -32,11 +31,11 @@ import com.codename1.maps.MapListener;
 import com.codename1.maps.layers.LinesLayer;
 import com.codename1.maps.layers.PointLayer;
 import com.codename1.maps.layers.PointsLayer;
-import com.codename1.ui.Container;
 import com.codename1.maps.providers.MapProvider;
 import com.codename1.maps.providers.OpenStreetMapProvider;
 import com.codename1.system.NativeLookup;
 import com.codename1.ui.BrowserComponent;
+import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.EncodedImage;
 import com.codename1.ui.PeerComponent;
@@ -206,8 +205,8 @@ public class MapContainer extends Container {
             addComponent(BorderLayout.CENTER, internalLightweightCmp);
         } else {
             internalBrowser = new BrowserComponent();
-            internalBrowser.getAllStyles().setPadding(0,0,0,0);
-            internalBrowser.getAllStyles().setMargin(0,0,0,0);
+            //internalBrowser.getAllStyles().setPadding(0,0,0,0);
+            //internalBrowser.getAllStyles().setMargin(0,0,0,0);
 
             initBrowserComponent(htmlApiKey);
             
@@ -433,13 +432,42 @@ public class MapContainer extends Container {
                             }
                         }
                     });
+                    if (text!=null)
+                        pl.setDisplayName(true);
                     points.addPoint(pl);
                     MapObject o = new MapObject();
                     o.point = pl;
                     o.callback = onClick;
                     markers.add(o);
                     return o;
-                } 
+                } else{
+                    
+                    internalLightweightCmp.addLayer(points);
+                    points.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent evt) {
+                            PointLayer point = (PointLayer) evt.getSource();
+                            for (MapObject o : markers) {
+                                if (o.point == point) {
+                                    if (o.callback != null) {
+                                        o.callback.actionPerformed(new ActionEvent(o));
+                                    }
+                                    return;
+                                }
+                            }
+                        }
+                    });
+                    if (text!=null)
+                        pl.setDisplayName(true);
+                    points.addPoint(pl);
+                    MapObject o = new MapObject();
+                    o.point = pl;
+                    o.callback = onClick;
+                    markers.add(o);
+                    return o;
+                    
+                }
+                
+                
             } else {
                 
                 String uri = null;
@@ -464,7 +492,7 @@ public class MapContainer extends Container {
             }
             
         }
-        return null;
+        //return null;
     }
     
     /**
