@@ -51,15 +51,10 @@
 var o = {};
 
     o.initialize_ = function(callback) {
-        //jQuery('body').append(this.el);
-        //ready(this, function() {
+        ready(this, function() {
             window.theMapEl = this.el;
-            //if (!this.el.parentNode) {
-                
-            //    window.document.body.appendChild(this.el);
-            //}
             callback.complete();
-        //});
+        });
     };
 
     o.calcScreenPosition__double_double = function(param1, param2, callback) {
@@ -83,8 +78,6 @@ var o = {};
                 delete this.paths[param1];
                 line.setMap(null);
             }
-            
-            
             callback.complete();
         });
     };
@@ -219,6 +212,15 @@ var o = {};
 
             var fireMapChangeEvent = self.$GLOBAL$.com_codename1_googlemaps_MapContainer.fireMapChangeEvent__int_int_double_double$async;
             google.maps.event.addListener(self.map, 'bounds_changed', function() {
+                if (!self.initialized) {
+                    callback.complete(self.el);
+                    self.initialized = true;
+                    ready(self, function() {
+                        setTimeout(function() {
+                            google.maps.event.trigger(self.map, 'resize');
+                        }, 500);
+                    });
+                }
                 fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
             });
             google.maps.event.addListener(self.map, 'center_changed', function() {
@@ -235,15 +237,17 @@ var o = {};
                 fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
             });
 
-            self.initialized = true;
-            ready(self);
             
         };
-        setTimeout(initialize, 500);
-        callback.complete(self.el);
-        
-        //initialize();
-        //google.maps.event.addDomListener(window, 'load', initialize);
+        initialize();
+        setTimeout(function() {
+            // If this still isn't initialized after 5 seconds, then something went really wrong
+            // Rather than deadlock EDT, we'll return here
+            if (!self.initialized) {
+                console.log("Failed to initialize GoogleMaps.  Check network or your Javascript Key");
+                callback.complete(self.el);
+            }
+        }, 5000);
         
     };
 
