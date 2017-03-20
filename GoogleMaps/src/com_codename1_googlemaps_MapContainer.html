@@ -375,7 +375,9 @@
                 setTimeout(function() {
                     var evt = pendingMapChangeEvent;
                     pendingMapChangeEvent = null;
-                    getMapContainer().fireMapChangeEvent(evt.zoom, evt.lat, evt.lon);
+                    if (evt) {
+                        getMapContainer().fireMapChangeEvent(evt.zoom, evt.lat, evt.lon);
+                    }
                 }, 100);
             }
             pendingMapChangeEvent = {
