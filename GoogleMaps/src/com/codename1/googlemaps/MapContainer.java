@@ -254,7 +254,7 @@ public class MapContainer extends Container {
         private void waitForReady() {
             int ctr = 0;
             while (bridge == null) {
-                if (ctr++ > 50) {
+                if (ctr++ > 500) {
                     throw new RuntimeException("Waited too long for browser bridge");
                 }
                 Display.getInstance().invokeAndBlock(new Runnable() {

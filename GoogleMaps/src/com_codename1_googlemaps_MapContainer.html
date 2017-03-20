@@ -413,6 +413,8 @@
 
         });
         google.maps.event.addListener(map, 'bounds_changed', function() {
+            bridge.initialized = true;
+            bridge.ready();
             fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
         });
         google.maps.event.addListener(map, 'center_changed', function() {
@@ -427,8 +429,7 @@
         google.maps.event.addListener(map, 'heading_changed', function() {
             fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
         });
-        bridge.initialized = true;
-        bridge.ready();
+        
       }
 
     </script>
