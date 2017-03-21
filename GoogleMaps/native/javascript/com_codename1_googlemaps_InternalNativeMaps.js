@@ -17,6 +17,23 @@
     
     var uniqueIdCounter = 0;
     
+    function triggerResize(self) {
+        var offset = jQuery(self.el).offset();
+        var width = jQuery(self.el).width();
+        var height = jQuery(self.el).height();
+        
+        if (self._lastOffset === undefined) {
+            self._lastOffset = offset;
+            self._lastWidth = width;
+            self._lastHeight = height;
+        } else {
+            if (self._lastOffset.x != offset.x || self._lastOffset.y != offset.y || self._lastWidth != width || self._lastHeight != height) {
+                google.maps.event.trigger(self.map, 'resize');
+            }
+        }
+        
+    }
+    
     function fromLatLngToPoint(latLng, map) {
         var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
         var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
@@ -59,13 +76,19 @@ var o = {};
 
     o.calcScreenPosition__double_double = function(param1, param2, callback) {
         ready(this, function() {
+            triggerResize(this);
+            var topRight=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getNorthEast()); 
+            var bottomLeft=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getSouthWest()); 
+            var scale=Math.pow(2,this.map.getZoom());
             this.lastPoint = this.map.getProjection().fromLatLngToPoint(new google.maps.LatLng(param1, param2));
+            this.lastPoint = new google.maps.Point((this.lastPoint.x-bottomLeft.x)*scale,(this.lastPoint.y-topRight.y)*scale);
             callback.complete();
         });
     };
 
     o.getLatitude_ = function(callback) {
         ready(this, function() {
+            triggerResize(this);
             callback.complete(this.map.getCenter().lat());
         });
     };
@@ -122,10 +145,16 @@ var o = {};
 
     o.calcLatLongPosition__int_int = function(param1, param2, callback) {
         ready(this, function() {
+            triggerResize(this);
+            // First convert these coordinates from cn1 coords
+            param1 = window.cn1ScaleCoord !== undefined ? window.cn1ScaleCoord(param1) : param1;
+            param2 = window.cn1ScaleCoord !== undefined ? window.cn1ScaleCoord(param2) : param2;
+            
             // retrieve the lat lng for the far extremities of the (visible) map
             var latLngBounds = this.map.getBounds();
             var neBound = latLngBounds.getNorthEast();
             var swBound = latLngBounds.getSouthWest();
+            //console.log("neBound = "+neBound+", swBound="+swBound);
     
             // convert the bounds in pixels
             var neBoundInPx = this.map.getProjection().fromLatLngToPoint(neBound);
@@ -253,6 +282,7 @@ var o = {};
 
     o.addMarker__byte_1ARRAY_double_double_java_lang_String_java_lang_String_boolean = function(param1, lat, lon, text, snippet, cb, callback) {
         ready(this, function() {
+            triggerResize(this);
             var self = this;
             var uint8 = new Uint8Array(param1);
             var url = 'data:image/png;base64,' + window.arrayBufferToBase64(uint8.buffer);

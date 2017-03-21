@@ -117,8 +117,11 @@
                 calcScreenPosition: function(lat, lon) {
                     this.lastPoint = null;
                     this.ready(function() {
+                        var topRight=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getNorthEast()); 
+                        var bottomLeft=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getSouthWest()); 
+                        var scale=Math.pow(2,this.map.getZoom());
                         this.lastPoint = this.map.getProjection().fromLatLngToPoint(new google.maps.LatLng(lat, lon));
-                        
+                        this.lastPoint = new google.maps.Point((this.lastPoint.x-bottomLeft.x)*scale,(this.lastPoint.y-topRight.y)*scale); 
                     });
                 },
                 addMarker : function(imageIcon, lat, lon, text, longText){

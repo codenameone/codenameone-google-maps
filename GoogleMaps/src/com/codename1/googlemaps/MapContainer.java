@@ -420,26 +420,28 @@ public class MapContainer extends Container {
                 if(points == null) {
                     points = new PointsLayer();
                     internalLightweightCmp.addLayer(points);
-                    points.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent evt) {
-                            PointLayer point = (PointLayer)evt.getSource();
-                            for(MapObject o : markers) {
-                                if(o.point == point) {
-                                    if(o.callback != null) {
-                                        o.callback.actionPerformed(new ActionEvent(o));
-                                    }
-                                    return;
+                }
+                points.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
+                        PointLayer point = (PointLayer)evt.getSource();
+                        for(MapObject o : markers) {
+                            if(o.point == point) {
+                                if(o.callback != null) {
+                                    o.callback.actionPerformed(new ActionEvent(o));
                                 }
+                                return;
                             }
                         }
-                    });
-                    points.addPoint(pl);
-                    MapObject o = new MapObject();
-                    o.point = pl;
-                    o.callback = onClick;
-                    markers.add(o);
-                    return o;
-                } 
+                    }
+                });
+                points.addPoint(pl);
+                MapObject o = new MapObject();
+                o.point = pl;
+                o.callback = onClick;
+                markers.add(o);
+                internalLightweightCmp.revalidate();
+                return o;
+                
             } else {
                 
                 String uri = null;
@@ -464,7 +466,7 @@ public class MapContainer extends Container {
             }
             
         }
-        return null;
+        
     }
     
     /**
@@ -641,8 +643,8 @@ public class MapContainer extends Container {
     }
 
     public BoundingBox getBoundingBox() {
-        Coord sw = this.getCoordAtPosition(getAbsoluteX(), getAbsoluteY() + getHeight());
-        Coord ne = this.getCoordAtPosition(getAbsoluteX() + getWidth(), getAbsoluteY());
+        Coord sw = this.getCoordAtPosition(0, getHeight());
+        Coord ne = this.getCoordAtPosition(getWidth(), 0);
         return new BoundingBox(sw, ne);
         
     }
@@ -736,11 +738,11 @@ public class MapContainer extends Container {
     public Coord getCoordAtPosition(int x, int y) {
         if(internalNative == null) {
             if(internalLightweightCmp != null) {
-                return internalLightweightCmp.getCoordFromPosition(x, y);
+                return internalLightweightCmp.getCoordFromPosition(x + getAbsoluteX(), y + getAbsoluteY());
             }
             browserBridge.waitForReady();
-            x -= internalBrowser.getAbsoluteX();
-            y -= internalBrowser.getAbsoluteY();
+            //x -= internalBrowser.getAbsoluteX();
+            //y -= internalBrowser.getAbsoluteY();
             //System.out.println("Browser bridge pointer here is "+browserBridge.bridge.toJSPointer());
             //Object res = browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
             //if (res instanceof Double) {
@@ -769,7 +771,10 @@ public class MapContainer extends Container {
     public Point getScreenCoordinate(double lat, double lon) {
         if(internalNative == null) {
             if(internalLightweightCmp != null) {
-                return internalLightweightCmp.getPointFromCoord(new Coord(lat, lon));
+                Point p =  internalLightweightCmp.getPointFromCoord(new Coord(lat, lon));
+                p.setX(p.getX());
+                p.setY(p.getY());
+                return p;
             }
             browserBridge.waitForReady();
             String coord = (String)browserBridge.bridge.call("getScreenCoord", new Object[]{lat, lon});
@@ -777,8 +782,8 @@ public class MapContainer extends Container {
                 String xStr = coord.substring(0, coord.indexOf(" "));
                 String yStr = coord.substring(coord.indexOf(" ")+1);
                 return new Point(
-                        (int)Double.parseDouble(xStr) + internalBrowser.getAbsoluteX(), 
-                        (int)Double.parseDouble(yStr) + internalBrowser.getAbsoluteY()
+                        (int)Double.parseDouble(xStr), 
+                        (int)Double.parseDouble(yStr)
                 );
             } catch (Exception ex) {
                 ex.printStackTrace();
