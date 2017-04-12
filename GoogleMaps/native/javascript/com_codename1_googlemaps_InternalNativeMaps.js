@@ -213,17 +213,23 @@ var o = {};
                 //Point p = mapInstance.getProjection().toScreenLocation(point);
                 //MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
                 //var p = self.map.getProjection().fromLatLngToPoint(evt.latLng);
+                if (cancelClick) {
+                    cancelClick = false;
+                    return;
+                }
                 var p = fromLatLngToPoint(evt.latLng, self.map);
                 fireTapEventStatic(self.mapId, p.x, p.y);
 
             });
             
             var inLongPress = false;
+            var cancelClick = false;
             google.maps.event.addListener(self.map, 'mousedown', function(evt) {
-                var p = self.map.getProjection().fromLatLngToPoint(evt.latLng);
+                var p = fromLatLngToPoint(evt.latLng, self.map);
                 inLongPress = true;
                 setTimeout(function() {
                     if (inLongPress) {
+                        cancelClick = true;
                         fireLongPressEventStatic(self.mapId, p.x, p.y);
                     }
                 }, 500);
