@@ -296,6 +296,12 @@ public class MapContainer extends Container {
                             fireTapEvent(((Double)args[0]).intValue() + internalBrowser.getAbsoluteX(), ((Double)args[1]).intValue() + internalBrowser.getAbsoluteY());
                         }
                     });
+                    jsProxy.set("fireLongPressEvent", new JSFunction() {
+
+                        public void apply(JSObject self, Object[] args) {
+                            fireLongPressEvent(((Double)args[0]).intValue() + internalBrowser.getAbsoluteX(), ((Double)args[1]).intValue() + internalBrowser.getAbsoluteY());
+                        }
+                    });
                     
                     jsProxy.set("fireMapChangeEvent", new JSFunction() {
 
