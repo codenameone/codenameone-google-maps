@@ -60,10 +60,12 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         if(AndroidNativeUtil.getActivity() != null) {
             android.util.Log.d("CN1 Maps", "Initializing maps");
             if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
+                android.util.Log.d("CN1 Mapss", "static()->getMainLooper:ok");
                 initMaps();
             } else {
                 AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
                     public void run() {
+                        android.util.Log.d("CN1 Mapss", "static()->runOnUiThread:ok");
                         initMaps();
                     }
                 });
@@ -112,7 +114,9 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                                 while(finished[0] == null) {
                                     try {
                                         finished.wait(100);
-                                    } catch(InterruptedException er) {}
+                                    } catch(InterruptedException er) {
+                                        android.util.Log.d("CN1 Mapss", "invokeAndBlock()->ex:"+er.toString());
+                                    }
                                 }
                             }
                         }
@@ -141,7 +145,8 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 System.out.println("Failed to initialize, google play services not installed: " + e);
                 e.printStackTrace();
             }
-        } 
+        } else
+            android.util.Log.d("CN1 Mapss", "onMapReady()->initialized:"+initialized);
     }
     
     public long addMarker(final byte[] icon, final double lat, final double lon, final String text, final String snippet, final boolean callback) {
@@ -344,6 +349,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 });
                 mapInstance.setMyLocationEnabled(showMyLocation);
                 mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
+                android.util.Log.d("CN1 Mapss", "onMapReady()->loaded:ok");
             }
         });
 
@@ -452,13 +458,12 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public void onCreate(Bundle savedInstanceState) {
+        android.util.Log.d("CN1 Mapss", "onCreate()");
         try {
             if (view != null) {
                 view.onCreate(savedInstanceState);
                 initMaps();
                 mapInstance = view.getMap();
-
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -466,12 +471,14 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public void onResume() {
+        android.util.Log.d("CN1 Mapss", "onResume()");
         try {
             if(view != null) {
                 mapInstance = view.getMap();
                 view.onResume();
                 installListeners();
-            }
+            }else
+                android.util.Log.d("CN1 Mapss", "onResume()->view:ok");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -479,6 +486,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public void onPause() {
+        android.util.Log.d("CN1 Mapss", "onPause()");
         try {
             if(view != null) {
                 view.onPause();
@@ -489,6 +497,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public void onDestroy() {
+        android.util.Log.d("CN1 Mapss", "onDestroy()");
         try {
             if(view != null) {
                 if (view.getParent() != null) {
@@ -513,6 +522,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public void onLowMemory() {
+        android.util.Log.d("CN1 Mapss", "onLowMemory()");
         try {
             if(view != null) {
                 view.onLowMemory();

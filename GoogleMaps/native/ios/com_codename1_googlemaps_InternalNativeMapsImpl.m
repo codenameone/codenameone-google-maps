@@ -50,7 +50,8 @@ extern float scaleValue;
         } else {
             marker.userData = nil;
         }
-        
+        //mapView.appearAnimation = kGMSMarkerAnimationPop
+        mapView.selectedMarker = marker;
         [marker retain];
         [pool release];
     });
