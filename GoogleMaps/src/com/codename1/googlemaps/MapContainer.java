@@ -435,6 +435,7 @@ public class MapContainer extends Container {
                                 if(o.callback != null) {
                                     o.callback.actionPerformed(new ActionEvent(o));
                                 }
+                                evt.consume();
                                 return;
                             }
                         }
