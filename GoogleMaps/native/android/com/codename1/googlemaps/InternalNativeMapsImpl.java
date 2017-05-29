@@ -482,9 +482,11 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         android.util.Log.i("CN1 Mapss", "onResume()");
         try {
             if(view != null) {
-                mapInstance = view.getMap();
+                
                 view.onResume();
+                mapInstance = view.getMap();
                 installListeners();
+                android.util.Log.i("CN1 Mapss", "onResume()->ok");
             }else
                 android.util.Log.i("CN1 Mapss", "onResume()->view:null");
 
