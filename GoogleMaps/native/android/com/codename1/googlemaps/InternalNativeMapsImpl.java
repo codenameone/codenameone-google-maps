@@ -21,12 +21,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import com.codename1.impl.android.AndroidImplementation;
+import static com.codename1.impl.android.AndroidImplementation.getActivity;
 import com.codename1.impl.android.AndroidNativeUtil;
 import com.codename1.impl.android.LifecycleListener;
-import com.codename1.io.Log;
+import com.codename1.ui.Display;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -42,20 +44,22 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.HashMap;
 
 public class InternalNativeMapsImpl implements LifecycleListener {
-    private int mapId;
-    private MapView view;
-    private GoogleMap mapInstance;
+    private static String TAG = "InternalNativeMapsImpl";
+    private static int mapId;
+    private static MapView view;
+    private static GoogleMap mapInstance;
     private static int uniqueIdCounter = 0;
     private HashMap<Long, Marker> markerLookup = new HashMap<Long, Marker>();
-    private HashMap<Marker, Long> listeners = new HashMap<Marker, Long>();
+    private static HashMap<Marker, Long> listeners = new HashMap<Marker, Long>();
     private static boolean supported = true;
     private HashMap<Long, Polyline> paths = new HashMap<Long, Polyline>();
     private PolylineOptions currentPath;
     private LatLng lastPosition;
     private Point lastPoint;
-    private boolean showMyLocation;
-    private boolean rotateGestureEnabled;
+    private static boolean showMyLocation;
+    private static boolean rotateGestureEnabled;
     private static boolean initialized = false;
+    private  final static boolean[] completed = new boolean[1];
 
     static {
         
@@ -355,35 +359,40 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 });
                 mapInstance.setMyLocationEnabled(showMyLocation);
                 mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
-                android.util.Log.i("CN1 Mapss", "installListeners()->loaded:ok");
+                Log.i(TAG, "installListeners()->loaded:ok");
             }
         });
 
     }
-
+    //--------------------------------------------------------------------------
     public android.view.View createNativeMap(int mapId) {
         this.mapId = mapId;
-        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
-            public void run() {
-                try {
-                    view = new MapView(AndroidNativeUtil.getActivity());
-                    view.onCreate(AndroidNativeUtil.getActivationBundle());
-                    mapInstance = view.getMap();
-                    installListeners();
-
-                } catch (Exception e) {
-                    System.out.println("Failed to initialize, google play services not installed: " + e);
-                    e.printStackTrace();
-                    view = null;
-                    return;
-                }
-            }
-        });
-        android.util.Log.i("CN1 Mapss", "createNativeMap()->mapInstance:"+(mapInstance!=null?"ok":"null"));
-        android.util.Log.i("CN1 Mapss", "createNativeMap()->view       :"+(view!=null?"ok":"null"));
+        runOnUiThreadAndBlock();
+//        runOnUiThreadAndBlock(new Runnable() {
+//            public void run() {
+//                try {
+//                    
+//                    view = new MapView(AndroidNativeUtil.getActivity());
+//                    Log.i(TAG, "createNativeMap()->view1:"+(view!=null?"ok":"null"));
+//                    view.onCreate(AndroidNativeUtil.getActivationBundle());
+//                    Log.i(TAG, "createNativeMap()->view2:"+(view!=null?"ok":"null"));
+//                    mapInstance = view.getMap();
+//                    Log.i(TAG, "createNativeMap()->mapInstance1:"+(mapInstance!=null?"ok":"null"));
+//                    installListeners();
+//
+//                } catch (Exception e) {
+//                    System.out.println("Failed to initialize, google play services not installed: " + e);
+//                    e.printStackTrace();
+//                    view = null;
+//                    return;
+//                }
+//            }
+//        });
+        Log.i(TAG, "createNativeMap()->mapInstance2:"+(mapInstance!=null?"ok":"null"));
+        Log.i(TAG, "createNativeMap()->view3:"+(view!=null?"ok":"null"));
         return view;
     }
-
+    //--------------------------------------------------------------------------
     public int getMapType() {
         switch(mapInstance.getMapType()) {
             case GoogleMap.MAP_TYPE_HYBRID:
@@ -535,7 +544,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public void onLowMemory() {
-        android.util.Log.i("CN1 Mapss", "onLowMemory()");
+        Log.i(TAG, "onLowMemory()");
         try {
             if(view != null) {
                 view.onLowMemory();
@@ -550,7 +559,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public void initialize() {
-        AndroidNativeUtil.addLifecycleListener(this);        
+        AndroidNativeUtil.addLifecycleListener(this);
         AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 try {
@@ -558,9 +567,226 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                     view.onPause();
                     view.onResume();
                 } catch (Exception e) {
-                    Log.e(e);
+                    Log.e(TAG, "initialize()->err1:"+e.toString());
                 }
             }
         });
     }
-}
+    //--------------------------------------------------------------------------
+    public static void runOnUiThreadAndBlock() {
+        
+        if (getActivity() == null) {
+            throw new RuntimeException("Cannot run on UI thread because getActivity() is null.  This generally means we are running inside a service in the background so UI access is disabled.");
+        }
+
+        //final boolean[] completed = new boolean[1];
+        completed[0] = false;
+        Log.i(TAG, "runOnUiThreadAndBlock()->completed:" + completed[0]);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //r.run();
+
+                    try {
+
+                        view = new MapView(AndroidNativeUtil.getActivity());
+                        Log.i(TAG, "createNativeMap()->view1:" + (view != null ? "ok" : "null"));
+                        view.onCreate(AndroidNativeUtil.getActivationBundle());
+                        Log.i(TAG, "createNativeMap()->view2:" + (view != null ? "ok" : "null"));
+                        mapInstance = view.getMap();
+                        Log.i(TAG, "createNativeMap()->mapInstance1:" + (mapInstance != null ? "ok" : "null"));
+                        view.getMapAsync(new OnMapReadyCallback() {
+                            @Override
+                            public void onMapReady(GoogleMap googleMap) {
+                                mapInstance = googleMap;
+                                mapInstance.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                                    public boolean onMarkerClick(Marker marker) {
+                                        Long val = listeners.get(marker);
+                                        if (val != null) {
+                                            MapContainer.fireMarkerEvent(InternalNativeMapsImpl.mapId, val.longValue());
+                                            return true;
+                                        }
+                                        return false;
+                                    }
+                                });
+                                mapInstance.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+                                    public void onCameraChange(CameraPosition position) {
+                                        MapContainer.fireMapChangeEvent(InternalNativeMapsImpl.mapId, (int) position.zoom, position.target.latitude, position.target.longitude);
+                                    }
+                                });
+                                mapInstance.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                                    public void onMapClick(LatLng point) {
+                                        Point p = mapInstance.getProjection().toScreenLocation(point);
+                                        MapContainer.fireTapEventStatic(InternalNativeMapsImpl.mapId, p.x, p.y);
+                                    }
+                                });
+                                mapInstance.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+
+                                    public void onMapLongClick(LatLng point) {
+                                        Point p = mapInstance.getProjection().toScreenLocation(point);
+                                        MapContainer.fireLongPressEventStatic(InternalNativeMapsImpl.mapId, p.x, p.y);
+                                    }
+                                });
+                                mapInstance.setMyLocationEnabled(showMyLocation);
+                                mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
+                                Log.i(TAG, "onMapReady()->loaded:ok");
+                                Log.i(TAG, "onMapReady()->completed:" + completed[0]);
+                                synchronized (completed) {
+                                    completed[0] = true;
+                                    completed.notify();
+                                    Log.i(TAG, "onMapReady()->notify ->completed:" + completed[0]);
+                                }
+
+
+                            }
+                        });
+                        
+
+
+                    } catch (Exception e) {
+                        System.out.println("Failed to initialize, google play services not installed: " + e);
+                        e.printStackTrace();
+                        view = null;
+                        return;
+                    }
+
+                } catch (Exception t) {
+                    Log.e(TAG, "runOnUiThread()->err1:" + t.toString());
+                }
+
+            }
+        });
+        Display.getInstance().invokeAndBlock(new Runnable() {
+            @Override
+            public void run() {
+                
+                Log.i(TAG, "invokeAndBlock()->completed:" + completed[0]);
+                synchronized (completed) {
+                    while (!completed[0]) {
+                        try {
+                            Log.i(TAG, "invokeAndBlock()->completed.waiting...");
+                            completed.wait();
+                            //Log.i(TAG, "invokeAndBlock()->completed->continue");
+                        } catch (InterruptedException err) {
+                            Log.e(TAG, "invokeAndBlock()->err2:" + err.toString());
+                        }
+                    }
+                    //completed[0] = false;
+                    Log.i(TAG, "invokeAndBlock()->completed.continue EDT...");
+                }
+            }
+        });
+
+    }
+    //--------------------------------------------------------------------------
+//    public static void runOnUiThreadAndBlock(final Runnable r) {
+//        
+//        if (getActivity() == null) {
+//            throw new RuntimeException("Cannot run on UI thread because getActivity() is null.  This generally means we are running inside a service in the background so UI access is disabled.");
+//        }
+//
+//        final boolean[] completed = new boolean[1];
+//        getActivity().runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    //r.run();
+//                    
+//                    try {
+//
+//                        view = new MapView(AndroidNativeUtil.getActivity());
+//                        Log.i(TAG, "createNativeMap()->view1:" + (view != null ? "ok" : "null"));
+//                        view.onCreate(AndroidNativeUtil.getActivationBundle());
+//                        Log.i(TAG, "createNativeMap()->view2:" + (view != null ? "ok" : "null"));
+//                        mapInstance = view.getMap();
+//                        Log.i(TAG, "createNativeMap()->mapInstance1:" + (mapInstance != null ? "ok" : "null"));
+//                        view.getMapAsync(new OnMapReadyCallback() {
+//                            @Override
+//                            public void onMapReady(GoogleMap googleMap) {
+//                                mapInstance = googleMap;
+//                                mapInstance.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+//                                    public boolean onMarkerClick(Marker marker) {
+//                                        Long val = listeners.get(marker);
+//                                        if (val != null) {
+//                                            MapContainer.fireMarkerEvent(InternalNativeMapsImpl.this.mapId, val.longValue());
+//                                            return true;
+//                                        }
+//                                        return false;
+//                                    }
+//                                });
+//                                mapInstance.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+//                                    public void onCameraChange(CameraPosition position) {
+//                                        MapContainer.fireMapChangeEvent(InternalNativeMapsImpl.this.mapId, (int) position.zoom, position.target.latitude, position.target.longitude);
+//                                    }
+//                                });
+//                                mapInstance.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//                                    public void onMapClick(LatLng point) {
+//                                        Point p = mapInstance.getProjection().toScreenLocation(point);
+//                                        MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
+//                                    }
+//                                });
+//                                mapInstance.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+//
+//                                    public void onMapLongClick(LatLng point) {
+//                                        Point p = mapInstance.getProjection().toScreenLocation(point);
+//                                        MapContainer.fireLongPressEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
+//                                    }
+//                                });
+//                                mapInstance.setMyLocationEnabled(showMyLocation);
+//                                mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
+//                                Log.i(TAG, "onMapReady()->loaded:ok");
+//                                
+//                                Log.i(TAG, "onMapReady()->notify ->completed:" + completed[0]);
+//                                synchronized (completed) {
+//                                    completed[0] = true;
+//                                    completed.notify();
+//                                    Log.i(TAG, "onMapReady()->notify ->completed:" + completed[0]);
+//                                }
+//                            }
+//                        });
+//
+//
+//                    } catch (Exception e) {
+//                        System.out.println("Failed to initialize, google play services not installed: " + e);
+//                        e.printStackTrace();
+//                        view = null;
+//                        return;
+//                    }
+//                    
+//                } catch (Exception  t) {
+//                    Log.e(TAG, "runOnUiThread()->err1:"+t.toString());  
+//                }
+//                
+//                Log.i(TAG, "runOnUiThread()->completed:"+completed[0]);
+////                synchronized (completed) {
+////                    completed[0] = true;
+////                    completed.notify();
+////                    Log.i(TAG, "runOnUiThread()->notify ->completed:"+completed[0]);
+////                }
+//                
+//                
+//            }
+//        });
+//        Display.getInstance().invokeAndBlock(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                synchronized (completed) {
+//                    Log.i(TAG, "invokeAndBlock()->completed:"+completed[0]);
+//                    while (!completed[0]) {
+//                        try {
+//                            completed.wait();
+//                            Log.i(TAG, "invokeAndBlock()->completed.wait...");
+//                        } catch (InterruptedException err) {
+//                            Log.e(TAG, "invokeAndBlock()->err2:"+err.toString());
+//                        }
+//                    }
+//                    Log.i(TAG, "invokeAndBlock()->completed.continue EDT...");
+//                }
+//            }
+//        });
+//    }
+
+
+}//EndClass
