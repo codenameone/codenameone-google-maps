@@ -16,6 +16,17 @@
  */
 package com.codename1.googlemaps;
 
+import android.Manifest;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.GoogleMap;
+import com.codename1.impl.android.AndroidNativeUtil;
+import java.util.HashMap;
+
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.LatLng;
+import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -299,7 +310,16 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public void setShowMyLocation(boolean show) {
+        if (show && !showMyLocation) {
+            if (!AndroidNativeUtil.checkForPermission(Manifest.permission.ACCESS_FINE_LOCATION, "Show My Location On Map")) {
+                //Log.p("Show my location has been disabled because permission was not granted by the user.");
+                System.out.println("Show My Location disabled because user didn't grant ACCESS_FINE_LOCATION permission");
+                return;
+            }
+            
+        }
         showMyLocation = show;
+        
         if(mapInstance != null) {
             AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -363,6 +383,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public android.view.View createNativeMap(int mapId) {
         this.mapId = mapId;
+        //if (showMyLocation) {
+        //    if (!AndroidNativeUtil.checkForPermission(Manifest.permission.ACCESS_FINE_LOCATION, "Show My Location On Map")) {
+        //        Log.p("Show my location has been disabled because permission was not granted by the user.");
+        //        showMyLocation = false;
+        //    }
+        //    
+        //}
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 try {

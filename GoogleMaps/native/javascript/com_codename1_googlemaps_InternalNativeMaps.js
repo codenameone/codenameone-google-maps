@@ -17,6 +17,23 @@
     
     var uniqueIdCounter = 0;
     
+    function triggerResize(self) {
+        var offset = jQuery(self.el).offset();
+        var width = jQuery(self.el).width();
+        var height = jQuery(self.el).height();
+        
+        if (self._lastOffset === undefined) {
+            self._lastOffset = offset;
+            self._lastWidth = width;
+            self._lastHeight = height;
+        } else {
+            if (self._lastOffset.x != offset.x || self._lastOffset.y != offset.y || self._lastWidth != width || self._lastHeight != height) {
+                google.maps.event.trigger(self.map, 'resize');
+            }
+        }
+        
+    }
+    
     function fromLatLngToPoint(latLng, map) {
         var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
         var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
@@ -51,26 +68,27 @@
 var o = {};
 
     o.initialize_ = function(callback) {
-        //jQuery('body').append(this.el);
-        //ready(this, function() {
+        ready(this, function() {
             window.theMapEl = this.el;
-            //if (!this.el.parentNode) {
-                
-            //    window.document.body.appendChild(this.el);
-            //}
             callback.complete();
-        //});
+        });
     };
 
     o.calcScreenPosition__double_double = function(param1, param2, callback) {
         ready(this, function() {
+            triggerResize(this);
+            var topRight=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getNorthEast()); 
+            var bottomLeft=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getSouthWest()); 
+            var scale=Math.pow(2,this.map.getZoom());
             this.lastPoint = this.map.getProjection().fromLatLngToPoint(new google.maps.LatLng(param1, param2));
+            this.lastPoint = new google.maps.Point((this.lastPoint.x-bottomLeft.x)*scale,(this.lastPoint.y-topRight.y)*scale);
             callback.complete();
         });
     };
 
     o.getLatitude_ = function(callback) {
         ready(this, function() {
+            triggerResize(this);
             callback.complete(this.map.getCenter().lat());
         });
     };
@@ -83,8 +101,6 @@ var o = {};
                 delete this.paths[param1];
                 line.setMap(null);
             }
-            
-            
             callback.complete();
         });
     };
@@ -129,10 +145,16 @@ var o = {};
 
     o.calcLatLongPosition__int_int = function(param1, param2, callback) {
         ready(this, function() {
+            triggerResize(this);
+            // First convert these coordinates from cn1 coords
+            param1 = window.cn1ScaleCoord !== undefined ? window.cn1ScaleCoord(param1) : param1;
+            param2 = window.cn1ScaleCoord !== undefined ? window.cn1ScaleCoord(param2) : param2;
+            
             // retrieve the lat lng for the far extremities of the (visible) map
             var latLngBounds = this.map.getBounds();
             var neBound = latLngBounds.getNorthEast();
             var swBound = latLngBounds.getSouthWest();
+            //console.log("neBound = "+neBound+", swBound="+swBound);
     
             // convert the bounds in pixels
             var neBoundInPx = this.map.getProjection().fromLatLngToPoint(neBound);
@@ -191,17 +213,23 @@ var o = {};
                 //Point p = mapInstance.getProjection().toScreenLocation(point);
                 //MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
                 //var p = self.map.getProjection().fromLatLngToPoint(evt.latLng);
+                if (cancelClick) {
+                    cancelClick = false;
+                    return;
+                }
                 var p = fromLatLngToPoint(evt.latLng, self.map);
                 fireTapEventStatic(self.mapId, p.x, p.y);
 
             });
             
             var inLongPress = false;
+            var cancelClick = false;
             google.maps.event.addListener(self.map, 'mousedown', function(evt) {
-                var p = self.map.getProjection().fromLatLngToPoint(evt.latLng);
+                var p = fromLatLngToPoint(evt.latLng, self.map);
                 inLongPress = true;
                 setTimeout(function() {
                     if (inLongPress) {
+                        cancelClick = true;
                         fireLongPressEventStatic(self.mapId, p.x, p.y);
                     }
                 }, 500);
@@ -219,6 +247,15 @@ var o = {};
 
             var fireMapChangeEvent = self.$GLOBAL$.com_codename1_googlemaps_MapContainer.fireMapChangeEvent__int_int_double_double$async;
             google.maps.event.addListener(self.map, 'bounds_changed', function() {
+                if (!self.initialized) {
+                    callback.complete(self.el);
+                    self.initialized = true;
+                    ready(self, function() {
+                        setTimeout(function() {
+                            google.maps.event.trigger(self.map, 'resize');
+                        }, 500);
+                    });
+                }
                 fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
             });
             google.maps.event.addListener(self.map, 'center_changed', function() {
@@ -235,20 +272,23 @@ var o = {};
                 fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
             });
 
-            self.initialized = true;
-            ready(self);
             
         };
-        setTimeout(initialize, 500);
-        callback.complete(self.el);
-        
-        //initialize();
-        //google.maps.event.addDomListener(window, 'load', initialize);
+        initialize();
+        setTimeout(function() {
+            // If this still isn't initialized after 5 seconds, then something went really wrong
+            // Rather than deadlock EDT, we'll return here
+            if (!self.initialized) {
+                console.log("Failed to initialize GoogleMaps.  Check network or your Javascript Key");
+                callback.complete(self.el);
+            }
+        }, 5000);
         
     };
 
     o.addMarker__byte_1ARRAY_double_double_java_lang_String_java_lang_String_boolean = function(param1, lat, lon, text, snippet, cb, callback) {
         ready(this, function() {
+            triggerResize(this);
             var self = this;
             var uint8 = new Uint8Array(param1);
             var url = 'data:image/png;base64,' + window.arrayBufferToBase64(uint8.buffer);

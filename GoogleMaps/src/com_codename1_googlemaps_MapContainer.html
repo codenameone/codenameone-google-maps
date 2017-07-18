@@ -117,8 +117,11 @@
                 calcScreenPosition: function(lat, lon) {
                     this.lastPoint = null;
                     this.ready(function() {
+                        var topRight=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getNorthEast()); 
+                        var bottomLeft=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getSouthWest()); 
+                        var scale=Math.pow(2,this.map.getZoom());
                         this.lastPoint = this.map.getProjection().fromLatLngToPoint(new google.maps.LatLng(lat, lon));
-                        
+                        this.lastPoint = new google.maps.Point((this.lastPoint.x-bottomLeft.x)*scale,(this.lastPoint.y-topRight.y)*scale); 
                     });
                 },
                 addMarker : function(imageIcon, lat, lon, text, longText){
@@ -358,6 +361,7 @@
                 return {
                     fireMapChangeEvent : function(zoom, lat, lon){},
                     fireTapEvent : function(x, y){},
+                    fireLongPressEvent : function(x, y){},
                     fireMarkerEvent : function(key){}
                 };
             }
@@ -375,7 +379,9 @@
                 setTimeout(function() {
                     var evt = pendingMapChangeEvent;
                     pendingMapChangeEvent = null;
-                    getMapContainer().fireMapChangeEvent(evt.zoom, evt.lat, evt.lon);
+                    if (evt) {
+                        getMapContainer().fireMapChangeEvent(evt.zoom, evt.lat, evt.lon);
+                    }
                 }, 100);
             }
             pendingMapChangeEvent = {
@@ -399,20 +405,55 @@
             getMapContainer().fireTapEvent(x, y);
         };
         
+        var fireLongPressEvent = function(x, y) {
+            getMapContainer().fireLongPressEvent(x, y);
+        };
+        
         var fireMarkerEvent = function(key) {
             getMapContainer().fireMarkerEvent(key);
         };
         bridge.fireMarkerEvent = fireMarkerEvent;
         // Add listeners to the map
-        
+        var cancelClick = false;
         google.maps.event.addListener(map, 'click', function(evt) {
             //Point p = mapInstance.getProjection().toScreenLocation(point);
             //MapContainer.fireTapEventStatic(InternalNativeMapsImpl.this.mapId, p.x, p.y);
+            if (inLongPress) {
+                return;
+            }
+            if (cancelClick) {
+                cancelClick = false;
+                return;
+            }
             var p = fromLatLngToPoint(evt.latLng, map);
             fireTapEvent(p.x, p.y);
 
         });
+        
+        var inLongPress = false;
+        google.maps.event.addListener(map, 'mousedown', function(evt) {
+            var p = fromLatLngToPoint(evt.latLng, map);
+            inLongPress = true;
+            setTimeout(function() {
+                if (inLongPress) {
+                    cancelClick = true;
+                    fireLongPressEvent(p.x, p.y);
+                }
+            }, 500);
+
+
+        });
+        google.maps.event.addListener(map, 'mouseup', function(evt) {
+            inLongPress = false;
+
+        });
+        google.maps.event.addListener(map, 'dragstart', function(evt) {
+            inLongPress = false;
+
+        });
         google.maps.event.addListener(map, 'bounds_changed', function() {
+            bridge.initialized = true;
+            bridge.ready();
             fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
         });
         google.maps.event.addListener(map, 'center_changed', function() {
@@ -427,8 +468,7 @@
         google.maps.event.addListener(map, 'heading_changed', function() {
             fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
         });
-        bridge.initialized = true;
-        bridge.ready();
+        
       }
 
     </script>

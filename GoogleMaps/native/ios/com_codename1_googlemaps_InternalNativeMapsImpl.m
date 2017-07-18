@@ -256,7 +256,7 @@ extern float scaleValue;
 -(void) calcLatLongPosition:(int)param param1:(int)param1 {
     dispatch_sync(dispatch_get_main_queue(), ^{
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        currentCoordinate = [mapView.projection coordinateForPoint:CGPointMake(param, param1)];
+        currentCoordinate = [mapView.projection coordinateForPoint:CGPointMake(param / scaleValue, param1 / scaleValue)];
         [pool release];
     });
 }
