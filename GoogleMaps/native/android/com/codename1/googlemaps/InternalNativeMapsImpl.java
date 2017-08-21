@@ -20,7 +20,11 @@ import android.Manifest;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.GoogleMap;
 import com.codename1.impl.android.AndroidNativeUtil;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.Marker;
@@ -77,58 +81,159 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             android.util.Log.d("CN1 Mapss", "Did not initialize maps because activity was null");
         }
         AndroidNativeUtil.registerViewRenderer(MapView.class, new AndroidNativeUtil.BitmapViewRenderer() {
-            private boolean rendering;
-            public Bitmap renderViewOnBitmap(View v, int w, int h) {
-                if (rendering) {
+
+            public Bitmap renderViewOnBitmap(View v, final int w, final int h) {
+
+                PeerImage pi = PeerImage.getPeerImage(v);
+                if (pi == null) {
+                    PeerImage.submitUpdate(v, w, h);
                     return null;
                 }
-                rendering = true;
-                try {
-                    // prevent potential exception during transitions
-                    if(w < 10 || h < 10) {
-                        rendering = false;
-                        return null;
-                    }
-                    final MapView mv = (MapView)v;
-                    if(mv.getParent() == null || mv.getHeight() < 10 || mv.getWidth() < 10) {
-                        return null;
-                    }
-                    final Bitmap[] finished = new Bitmap[1];
-                    AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
-
-                        public void run() {
-                            mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
-                                public void onSnapshotReady(Bitmap snapshot) {
-
-                                    synchronized(finished) {
-                                        finished[0] = snapshot;//bmOverlay;
-                                        finished.notify();
-                                    }
-                                }
-                            });
-                        }
-
-                    });
-
-                    com.codename1.ui.Display.getInstance().invokeAndBlock(new Runnable() {
-                        @Override
-                        public void run() {
-                            synchronized(finished) {
-                                while(finished[0] == null) {
-                                    try {
-                                        finished.wait(100);
-                                    } catch(InterruptedException er) {}
-                                }
-                            }
-                        }
-                    });
-                    return finished[0];
-                } finally {
-                    rendering = false;
+                if (pi.peerImage == null || pi.peerW != w || pi.peerH != h) {
+                    PeerImage.submitUpdate(v, w, h);
+                    return null;
                 }
+                pi.lastUsed = System.currentTimeMillis();
+                return pi.peerImage;
+
             }
         });
     }
+
+    private static class PeerImage {
+
+        Bitmap peerImage;
+        int peerW;
+        int peerH;
+        Timer timer;
+        long lastUsed;
+
+
+        PeerImage() {
+            lastUsed = System.currentTimeMillis();
+        }
+
+        public static PeerImage getPeerImage(View v) {
+            return peerImages.get(v);
+        }
+
+        public void update(View v, final int w, final int h) {
+            // prevent potential exception during transitions
+            if(w < 10 || h < 10) {
+
+                return;
+            }
+            final MapView mv = (MapView)v;
+            if(mv.getParent() == null || mv.getHeight() < 10 || mv.getWidth() < 10) {
+                return;
+            }
+            AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
+
+                public void run() {
+                    mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
+                        public void onSnapshotReady(Bitmap snapshot) {
+                            peerImage = snapshot;
+                            peerW = w;
+                            peerH = h;
+                            lastUsed = System.currentTimeMillis();
+                        }
+                    });
+                }
+
+            });
+
+        }
+
+
+
+
+        private static PendingUpdate findPendingUpdate(View v) {
+            synchronized(pendingUpdates) {
+                for (PendingUpdate u : pendingUpdates) {
+                    if (u.view == v) {
+                        return u;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private static void submitUpdate(View v, int w, int h) {
+            synchronized(pendingUpdates) {
+                PendingUpdate existing = findPendingUpdate(v);
+                if (existing == null) {
+                    existing = new PendingUpdate();
+                    existing.view = v;
+                    existing.w = w;
+                    existing.h = h;
+                    pendingUpdates.add(existing);
+                    existing.schedule();
+                }
+                existing.w = w;
+                existing.h = h;
+            }
+
+        }
+
+        private static void clearOldest() {
+            synchronized (peerImages) {
+                int maxNum = 5;
+                long currMark = System.currentTimeMillis();
+                ArrayList<PeerImage> toRemove = new ArrayList<PeerImage>();
+                while (peerImages.size() > 5) {
+                    View oldest = null;
+                    PeerImage oldestImg = null;
+                    for (View vimg : peerImages.keySet()) {
+                        PeerImage img = peerImages.get(vimg);
+                        if (oldest == null || img.lastUsed < oldestImg.lastUsed) {
+                            oldest = vimg;
+                            oldestImg = img;
+                        }
+                    }
+                    if (oldest != null) {
+                        peerImages.remove(oldest);
+                    }
+
+                }
+
+            }
+        }
+
+    }
+
+    static HashMap<View, PeerImage> peerImages = new HashMap<View,PeerImage>();
+    private static class PendingUpdate {
+        private View view;
+        private int w;
+        private int h;
+        long requestTime;
+        Timer timer;
+
+
+
+        private void schedule() {
+            timer = new Timer();
+            TimerTask tt = new TimerTask() {
+                @Override
+                public void run() {
+                    synchronized(pendingUpdates) {
+                        pendingUpdates.remove(PendingUpdate.this);
+                    }
+                    PeerImage pe = peerImages.get(view);
+                    if (pe == null) {
+                        pe = new PeerImage();
+                        peerImages.put(view, pe);
+                    }
+                    pe.update(view, w, h);
+
+                }
+            };
+            timer.schedule(tt, 1000L);
+        }
+    }
+    static java.util.ArrayList<PendingUpdate> pendingUpdates = new java.util.ArrayList<PendingUpdate>();
+
+
     private static boolean initialized = false;
     private static void initMaps() {
         if (!initialized) {
@@ -172,8 +277,10 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                     listeners.put(m, key);
                 }
                 markerLookup.put(key, m);
+                //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
             }
         });
+
         return key;
     }
 
@@ -186,6 +293,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 mapInstance.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lon)));
+                PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
             }
         });
     }
@@ -195,6 +303,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = mapInstance.getCameraPosition().zoom;
+
             }
         });
         return result[0];
@@ -204,6 +313,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 mapInstance.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lon), zoom));
+                PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
             }
         });
     }
@@ -218,6 +328,8 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 mapInstance.clear();
                 markerLookup.clear();
                 listeners.clear();
+                //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
+
             }
         });
     }
@@ -248,6 +360,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                     p.remove();
                     paths.remove(param);
                 }
+                //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
             }
         });
     }
@@ -284,6 +397,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                         return;
                 }
                 mapInstance.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
             }
         });
     }
@@ -304,6 +418,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 @Override
                 public void run() {
                     mapInstance.setMyLocationEnabled(showMyLocation);
+                    //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
                 }
             });            
         }
@@ -337,6 +452,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 mapInstance.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
                     public void onCameraChange(CameraPosition position) {
                         MapContainer.fireMapChangeEvent(InternalNativeMapsImpl.this.mapId, (int) position.zoom, position.target.latitude, position.target.longitude);
+                        PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
                     }
                 });
                 mapInstance.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -382,6 +498,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                     view = null;
                     return;
                 }
+                //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
             }
         });
         return view;
@@ -415,6 +532,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 @Override
                 public void run() {
                     mapInstance.getUiSettings().setRotateGesturesEnabled(rotateGestureEnabled);
+                    //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
                 }
             });
         }
@@ -427,6 +545,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             @Override
             public void run() {
                 paths.put(key, mapInstance.addPolyline(currentPath));
+                //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
             }
         });
         return key;
@@ -499,6 +618,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         try {
             if(view != null) {
                 view.onPause();
+
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -533,6 +653,24 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         try {
             if(view != null) {
                 view.onLowMemory();
+                synchronized(pendingUpdates) {
+                    PendingUpdate toRemove = null;
+                    for (PendingUpdate u : pendingUpdates) {
+                        if (u.view == view) {
+                            if (u.timer != null) {
+                                u.timer.cancel();
+                                u.timer = null;
+                            }
+                            toRemove = u;
+                        }
+                    }
+                    if (toRemove != null) {
+                        pendingUpdates.remove(toRemove);
+                    }
+
+
+                }
+                peerImages.clear();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -541,6 +679,23 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
     public void deinitialize() {
         AndroidNativeUtil.removeLifecycleListener(this);
+        synchronized(pendingUpdates) {
+            PendingUpdate toRemove = null;
+            for (PendingUpdate u : pendingUpdates) {
+                if (u.view == view) {
+                    if (u.timer != null) {
+                        u.timer.cancel();
+                        u.timer = null;
+                    }
+                    toRemove = u;
+                }
+            }
+            if (toRemove != null) {
+                pendingUpdates.remove(toRemove);
+            }
+
+        }
+        PeerImage.clearOldest();
     }
 
     public void initialize() {
