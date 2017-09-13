@@ -52,7 +52,10 @@ public class GoogleMapsTestApp {
 
     private static final String HTML_API_KEY = "AIzaSyBWeRU02YUYPdwRuMFyTKIXUbHjq6e35Gw";
     private Form current;
-
+    MapObject me; 
+    MapObject markerAdded;
+    boolean tapDisabled = false;
+    //-----------------------------------------------------------------------------------------
     public void init(Object context) {
         try {
             Resources theme = Resources.openLayered("/theme");
@@ -63,12 +66,14 @@ public class GoogleMapsTestApp {
             e.printStackTrace();
         }
     }
-    MapObject sydney;
+    //-----------------------------------------------------------------------------------------
     public void start() {
+        
         if (current != null) {
             current.show();
             return;
         }
+        
         Form hi = new Form("Native Maps Test");
         hi.setLayout(new BorderLayout());
         final MapContainer cnt = new MapContainer(HTML_API_KEY);
@@ -102,6 +107,8 @@ public class GoogleMapsTestApp {
         s.setBgTransparency(0);
         FontImage markerImg = FontImage.createMaterial(FontImage.MATERIAL_PLACE, s, 3);
         
+        
+        Button btnMoveCamera = new Button("Move Camera");
         Button btnAddMarker = new Button("Add Marker");
         btnAddMarker.addActionListener(e->{
            
@@ -286,39 +293,42 @@ public class GoogleMapsTestApp {
         
         
         Button btnClearAll = new Button("Clear All");
-        btnClearAll.addActionListener(e->{
-            cnt.clearMapLayers();
-        });
-        
-        MapObject mo = cnt.addMarker(EncodedImage.createFromImage(markerImg, false), new Coord(-33.866, 151.195), "test", "test",e->{
-            System.out.println("Marker clicked");
-            cnt.removeMapObject(sydney);
-        });
-        sydney = mo;
-        System.out.println("MO is "+mo);
-        mo = cnt.addMarker(EncodedImage.createFromImage(markerImg, false), new Coord(-18.142, 178.431), "test", "test",e->{
-            System.out.println("Marker clicked");
-        });
-        System.out.println("MO is "+mo);
-        cnt.addTapListener(e->{
-            if (tapDisabled) {
-                return;
+        btnMoveCamera.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //cnt.setCameraPosition(new Coord(-33.867, 151.206));
             }
-            tapDisabled = true;
-            TextField enterName = new TextField();
-            Container wrapper = BoxLayout.encloseY(new Label("Name:"), enterName);
-            InteractionDialog dlg = new InteractionDialog("Add Marker");
-            dlg.getContentPane().add(wrapper);
-            enterName.setDoneListener(e2->{
-                String txt = enterName.getText();
-                cnt.addMarker(EncodedImage.createFromImage(markerImg, false), cnt.getCoordAtPosition(e.getX(), e.getY()), enterName.getText(), "", e3->{
-                    ToastBar.showMessage("You clicked "+txt, FontImage.MATERIAL_PLACE);
+        });
+        btnAddMarker.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                //cnt.setCameraPosition(new Coord(41.889, -87.622));
+               markerAdded = cnt.addMarker(EncodedImage.createFromImage(markerImg, false), cnt.getCameraPosition(), "Hi marker", "Optional long description", new ActionListener() {
+
+                    public void actionPerformed(ActionEvent evt) {
+                        ToastBar.showMessage("You clicked the marker", FontImage.MATERIAL_PLACE);
+                    }
                 });
-                dlg.dispose();
-                tapDisabled = false;
-            });
-            dlg.showPopupDialog(new Rectangle(e.getX(), e.getY(), 10, 10));
-            enterName.startEditingAsync();
+            }
+        });
+        btnAddPath.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cnt.addPath(
+                        cnt.getCameraPosition(),
+                        new Coord(-33.866, 151.195), // Sydney
+                        new Coord(-18.142, 178.431),  // Fiji
+                        new Coord(21.291, -157.821),  // Hawaii
+                        new Coord(37.423, -122.091)  // Mountain View
+                );
+            }
+        });
+        btnClearAll.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cnt.clearMapLayers();
+            }
         });
         
         Button showNextForm = $(new Button("Next Form"))
@@ -370,15 +380,14 @@ public class GoogleMapsTestApp {
         hi.show();
         
     }
-    boolean tapDisabled = false;
-
+    //-----------------------------------------------------------------------------------------
     public void stop() {
         current = Display.getInstance().getCurrent();
     }
-
+    //-----------------------------------------------------------------------------------------
     public void destroy() {
     }
-
+    //-----------------------------------------------------------------------------------------
     
 
 }
