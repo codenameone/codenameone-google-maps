@@ -245,6 +245,7 @@ public class MapContainer extends Container {
                 if (r == null) {
                     return;
                 }
+                
                 synchronized(onReady) {
                     onReady.add(r);
                 }
@@ -252,6 +253,7 @@ public class MapContainer extends Container {
         }
         
         private void waitForReady() {
+            //System.out.println("Waiting for ready");
             int ctr = 0;
             while (bridge == null) {
                 if (ctr++ > 500) {
@@ -262,7 +264,10 @@ public class MapContainer extends Container {
                     public void run() {
                         try {
                             Thread.sleep(20);
-                        } catch (Exception ex){}
+                            //System.out.println("Finished sleeping 20-");
+                        } catch (Exception ex){
+                            Log.e(ex);
+                        }
                     }
                     
                 });
