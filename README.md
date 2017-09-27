@@ -38,12 +38,12 @@ android.playServicesVersion=11.0.4
 
 **Android Note**
 
-Currently (as of September 27, 2017) the Codename One extensions repository (through Codename One settings) includes version 22, which works with the default version of Google Play Services (8.3.0) on the build server.  The [GoogleMaps.cn1lib](https://github.com/codenameone/codenameone-google-maps/blob/master/GoogleMaps.cn1lib?raw=true) on the master branch includes some new features that require Google Play Services 9.4.0 or higher (and have only been tested with 11.0.4).  Once the build server has been updated to support the new play services version by default, the new version of GoogleMaps.cn1lib will be added to the repository.  Until then, you can install new new version by downloading it manually [from here]([GoogleMaps.cn1lib](https://github.com/codenameone/codenameone-google-maps/blob/master/GoogleMaps.cn1lib?raw=true), copying it to your "libs" directory, and selecting "Refresh CN1Libs" from the Codename One Menu in the IDE.  If you do use this new version, you'll need to add the following build hint:
+Currently (as of September 27, 2017) the Codename One extensions repository (through Codename One settings) includes version 22, which works with the default version of Google Play Services (8.3.0) on the build server.  The [GoogleMaps.cn1lib](https://github.com/codenameone/codenameone-google-maps/blob/master/GoogleMaps.cn1lib?raw=true) on the master branch includes some new features that require Google Play Services 9.4.0 or higher (and have only been tested with 11.0.4).  Once the build server has been updated to support the new play services version by default, the new version of GoogleMaps.cn1lib will be added to the repository.  Until then, you can install new new version by downloading it manually [from here](https://github.com/codenameone/codenameone-google-maps/blob/master/GoogleMaps.cn1lib?raw=true), copying it to your "libs" directory, and selecting "Refresh CN1Libs" from the Codename One Menu in the IDE.  If you do use this new version, you'll need to add the following build hint:
 
 ~~~~
 android.playServicesVersion=11.0.4
 ~~~~
 
-NOTE: Version 23 and higher require google play services 9.4.0 or higher, and have only been tested against 11.0.4.  If you require compatibility with the older version (8.3.0), you'll need to install GoogleMaps.cn1lib v22 or earlier.  You can download v22 [here](GoogleMaps.cn1lib v22).
+NOTE: Version 23 and higher require google play services 9.4.0 or higher, and have only been tested against 11.0.4.  If you require compatibility with the older version (8.3.0), you'll need to install GoogleMaps.cn1lib v22 or earlier.  You can download v22 [here](https://github.com/codenameone/codenameone-google-maps/releases/tag/v22).
 
 This project was migrated from an old project on Google code http://code.google.com/p/codenameone-google-maps
