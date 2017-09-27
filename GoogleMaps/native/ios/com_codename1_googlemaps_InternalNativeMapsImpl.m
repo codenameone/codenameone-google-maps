@@ -45,7 +45,7 @@ extern float scaleValue;
         }
         marker.map = mapView;
         marker.tappable = YES;
-        if(param) {
+        if(param5) {
             marker.userData = @"";
         } else {
             marker.userData = nil;
@@ -74,7 +74,7 @@ extern float scaleValue;
 -(BOOL)mapView:(GMSMapView *)mapView didTapMarker:(GMSMarker *)marker {
     if(marker.userData != nil) {
         com_codename1_googlemaps_MapContainer_fireMarkerEvent___int_long(CN1_THREAD_GET_STATE_PASS_ARG mapId, marker);
-        return YES;
+        return NO;
     }
     return NO;
 }
