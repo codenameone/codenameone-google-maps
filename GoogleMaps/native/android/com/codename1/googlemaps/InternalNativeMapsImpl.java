@@ -17,6 +17,8 @@
 package com.codename1.googlemaps;
 
 import android.Manifest;
+
+import com.codename1.io.Util;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.GoogleMap;
 import com.codename1.impl.android.AndroidNativeUtil;
@@ -130,14 +132,22 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
 
                 public void run() {
-                    mv.getMap().snapshot(new GoogleMap.SnapshotReadyCallback() {
-                        public void onSnapshotReady(Bitmap snapshot) {
-                            peerImage = snapshot;
-                            peerW = w;
-                            peerH = h;
-                            lastUsed = System.currentTimeMillis();
-                        }
-                    });
+                    //mv.
+                    mv.getMapAsync(new OnMapReadyCallback() {
+                                       @Override
+                                       public void onMapReady(GoogleMap googleMap) {
+                                           googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+                                               public void onSnapshotReady(Bitmap snapshot) {
+                                                   peerImage = snapshot;
+                                                   peerW = w;
+                                                   peerH = h;
+                                                   lastUsed = System.currentTimeMillis();
+                                               }
+                                           });
+                                       }
+                                   });
+
+
                 }
 
             });
@@ -245,7 +255,7 @@ public class InternalNativeMapsImpl implements LifecycleListener {
 
                 v.onCreate(AndroidNativeUtil.getActivationBundle());
                 v.onResume();
-                v.getMap();
+                //v.getMap();
             } catch (Exception e) {
                 supported = false;
                 System.out.println("Failed to initialize, google play services not installed: " + e);
@@ -455,6 +465,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                         PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
                     }
                 });
+                mapInstance.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+                    @Override
+                    public void onCameraMove() {
+                        MapContainer.fireMapChangeEvent(InternalNativeMapsImpl.this.mapId, (int) mapInstance.getCameraPosition().zoom, mapInstance.getCameraPosition().target.latitude, mapInstance.getCameraPosition().target.longitude);
+
+                    }
+                });
                 mapInstance.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
                     public void onMapClick(LatLng point) {
                         Point p = mapInstance.getProjection().toScreenLocation(point);
@@ -484,23 +501,53 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         //    }
         //    
         //}
-        AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
+        final boolean[] ready = new boolean[1];
+        AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 try {
                     view = new MapView(AndroidNativeUtil.getActivity());
                     view.onCreate(AndroidNativeUtil.getActivationBundle());
-                    mapInstance = view.getMap();
-                    installListeners();
+                    view.getMapAsync(new OnMapReadyCallback() {
+                        @Override
+                        public void onMapReady(GoogleMap googleMap) {
+                            try {
+                                mapInstance = googleMap;
+                                installListeners();
+                            } finally {
+                                synchronized (ready) {
+                                    ready[0] = true;
+                                    ready.notifyAll();
+                                }
+                            }
+                        }
+                    });
+                    //mapInstance = view.getMap();
 
-                } catch (Exception e) {
+
+                } catch (Throwable e) {
                     System.out.println("Failed to initialize, google play services not installed: " + e);
                     e.printStackTrace();
                     view = null;
+                    synchronized(ready) {
+                        ready[0] = true;
+                        ready.notifyAll();
+                    }
                     return;
                 }
                 //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
             }
         });
+        while (!ready[0]) {
+            Display.getInstance().invokeAndBlock(new Runnable() {
+                public void run() {
+                    synchronized(ready) {
+                        if (!ready[0]) {
+                            Util.wait(ready, 30);
+                        }
+                    }
+                }
+            });
+        }
         return view;
     }
 
@@ -592,7 +639,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             if (view != null) {
                 view.onCreate(savedInstanceState);
                 initMaps();
-                mapInstance = view.getMap();
+                view.getMapAsync(new OnMapReadyCallback() {
+                    @Override
+                    public void onMapReady(GoogleMap googleMap) {
+                        mapInstance = googleMap;
+                    }
+                });
+                //mapInstance = view.getMap();
 
 
             }
@@ -604,7 +657,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     public void onResume() {
         try {
             if(view != null) {
-                mapInstance = view.getMap();
+                //mapInstance = view.getMap();
+                view.getMapAsync(new OnMapReadyCallback() {
+                    @Override
+                    public void onMapReady(GoogleMap googleMap) {
+                        mapInstance = googleMap;
+                    }
+                });
                 view.onResume();
                 installListeners();
             }

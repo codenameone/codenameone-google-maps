@@ -375,6 +375,7 @@
         var fireMapChangeEvent = function(zoom, lat, lon) {
             // To prevent flooding the JS bridge with events faster than we can handle them, we
             // throttle these change events here
+            /*
             if (pendingMapChangeEvent === null) {
                 setTimeout(function() {
                     var evt = pendingMapChangeEvent;
@@ -382,13 +383,15 @@
                     if (evt) {
                         getMapContainer().fireMapChangeEvent(evt.zoom, evt.lat, evt.lon);
                     }
-                }, 100);
-            }
+                }, 0);
+            }*/
             pendingMapChangeEvent = {
                 zoom:zoom,
                 lat:lat,
                 lon:lon
             };
+            var evt = pendingMapChangeEvent;
+            getMapContainer().fireMapChangeEvent(evt.zoom, evt.lat, evt.lon);
             
         };
         
@@ -451,23 +454,27 @@
             inLongPress = false;
 
         });
+        google.maps.event.addListener(map, 'drag', function(evt) {
+            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+
+        });
         google.maps.event.addListener(map, 'bounds_changed', function() {
             bridge.initialized = true;
             bridge.ready();
             fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
         });
-        google.maps.event.addListener(map, 'center_changed', function() {
-            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
-        });
-        google.maps.event.addListener(map, 'zoom_changed', function() {
-            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
-        });
-        google.maps.event.addListener(map, 'tilt_changed', function() {
-            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
-        });
-        google.maps.event.addListener(map, 'heading_changed', function() {
-            fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
-        });
+        //google.maps.event.addListener(map, 'center_changed', function() {
+        //    fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+        //});
+        //google.maps.event.addListener(map, 'zoom_changed', function() {
+        //    fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+        //});
+        //google.maps.event.addListener(map, 'tilt_changed', function() {
+        //    fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+        //});
+        //google.maps.event.addListener(map, 'heading_changed', function() {
+        //    fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
+        //});
         
       }
 
