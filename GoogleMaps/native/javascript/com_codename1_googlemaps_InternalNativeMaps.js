@@ -76,12 +76,13 @@ var o = {};
 
     o.calcScreenPosition__double_double = function(param1, param2, callback) {
         ready(this, function() {
+            var unscaleCoord = window.cn1UnscaleCoord !== undefined ? window.cn1UnscaleCoord : function(x){return x};
             triggerResize(this);
             var topRight=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getNorthEast()); 
             var bottomLeft=this.map.getProjection().fromLatLngToPoint(this.map.getBounds().getSouthWest()); 
             var scale=Math.pow(2,this.map.getZoom());
             this.lastPoint = this.map.getProjection().fromLatLngToPoint(new google.maps.LatLng(param1, param2));
-            this.lastPoint = new google.maps.Point((this.lastPoint.x-bottomLeft.x)*scale,(this.lastPoint.y-topRight.y)*scale);
+            this.lastPoint = new google.maps.Point(unscaleCoord((this.lastPoint.x-bottomLeft.x)*scale),unscaleCoord((this.lastPoint.y-topRight.y)*scale));
             callback.complete();
         });
     };
@@ -252,6 +253,9 @@ var o = {};
                     self.initialized = true;
                     ready(self, function() {
                         setTimeout(function() {
+                            if (self.center) {
+                                self.map.setCenter(self.center);
+                            }
                             google.maps.event.trigger(self.map, 'resize');
                         }, 500);
                     });
@@ -259,7 +263,6 @@ var o = {};
                 fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
             });
             google.maps.event.addListener(self.map, 'center_changed', function() {
-                //console.log("Center changed");
                 fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
             });
             google.maps.event.addListener(self.map, 'zoom_changed', function() {
@@ -290,8 +293,8 @@ var o = {};
         ready(this, function() {
             triggerResize(this);
             var self = this;
-            var uint8 = new Uint8Array(param1);
-            var url = 'data:image/png;base64,' + window.arrayBufferToBase64(uint8.buffer);
+            var uint8 = param1 !== null ? new Uint8Array(param1) : null;
+            var url = uint8 !== null ? ('data:image/png;base64,' + window.arrayBufferToBase64(uint8.buffer)) : null;
             var markerOpts = {
                 icon : url,
                 map : this.map,
@@ -372,6 +375,7 @@ var o = {};
     o.setPosition__double_double = function(param1, param2, callback) {
         ready(this, function() {
         //console.log("Setting position");
+            this.center = new google.maps.LatLng(param1, param2);
             this.map.setCenter(new google.maps.LatLng(param1, param2));
             callback.complete();
         });
@@ -396,9 +400,9 @@ var o = {};
 
     o.setZoom__double_double_float = function(param1, param2, param3, callback) {
         ready(this, function() {
-        //console.log("Setting zoom");
-            this.map.setCenter(new google.maps.LatLng(param1, param2));
+            this.center = new google.maps.LatLng(param1, param2);
             this.map.setZoom(param3);
+            this.map.setCenter(new google.maps.LatLng(param1, param2));
             callback.complete();
         });
     };
