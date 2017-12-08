@@ -1,12 +1,31 @@
+using com.codename1.impl;
+using Windows.Devices.Geolocation;
+using Windows.UI.Xaml.Controls.Maps;
+using System;
 namespace com.codename1.googlemaps{
+   
 
+    public class InternalNativeMapsImpl : IInternalNativeMapsImpl {
 
-public class InternalNativeMapsImpl : IInternalNativeMapsImpl {
+        const string TOKEN_KEY = "windows.bingmaps.token";
+
+        MapControl mapControl;
+        int mapId;
+        int currPx;
+        int currPy;
+        double currLat;
+        double currLng;
+
     public void initialize() {
     }
 
     public int getMaxZoom() {
-        return 0;
+            int res = 0;
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                res = (int)mapControl.MaxZoomLevel;
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+            return res;
     }
 
     public long finishPath(long param) {
@@ -14,29 +33,45 @@ public class InternalNativeMapsImpl : IInternalNativeMapsImpl {
     }
 
     public void calcLatLongPosition(int param, int param1) {
-    }
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                Windows.Devices.Geolocation.BasicGeoposition cityPosition = new BasicGeoposition() { Latitude = 0, Longitude = 0 };
+                Geopoint pt = new Geopoint(cityPosition);
+                Windows.Foundation.Point p = new Windows.Foundation.Point(param/SilverlightImplementation.scaleFactor, param1/SilverlightImplementation.scaleFactor);
+                mapControl.GetLocationFromOffset(p, out pt);
+                currLat = pt.Position.Latitude;
+                currLng = pt.Position.Longitude;
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+           
+            
+        }
 
     public double getScreenLon() {
-        return 0;
+            return currLng;
     }
 
     public double getScreenLat() {
-        return 0;
+        return currLat;
     }
 
     public int getScreenY() {
-        return 0;
+            return currPy;
     }
 
     public void removeMapElement(long param) {
     }
 
     public double getLatitude() {
-        return 0;
+            double res = 0;
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+               res = mapControl.Center.Position.Latitude;
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+            return res;
     }
 
     public int getScreenX() {
-        return 0;
+            return currPx;
     }
 
     public void setRotateGestureEnabled(bool param) {
@@ -46,14 +81,47 @@ public class InternalNativeMapsImpl : IInternalNativeMapsImpl {
     }
 
     public void calcScreenPosition(double param, double param1) {
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                Windows.Devices.Geolocation.BasicGeoposition cityPosition = new BasicGeoposition() { Latitude = param, Longitude = param1 };
+                Geopoint pt = new Geopoint(cityPosition);
+                Windows.Foundation.Point p = new Windows.Foundation.Point();
+                mapControl.GetOffsetFromLocation(pt, out p);
+                currPx = (int)(p.X*SilverlightImplementation.scaleFactor);
+                currPy = (int)(p.Y*SilverlightImplementation.scaleFactor);
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+           
+
     }
 
     public object createNativeMap(int param) {
-        return null;
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                mapControl = new MapControl();
+                mapId = param;
+                mapControl.ZoomInteractionMode = MapInteractionMode.GestureAndControl;
+                mapControl.TiltInteractionMode = MapInteractionMode.GestureAndControl;
+                string token = com.codename1.ui.Display.getInstance().getProperty(TOKEN_KEY, "");
+            
+                mapControl.MapServiceToken = token;
+                mapControl.ActualCameraChanged += MapControl_ActualCameraChanged;
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+
+            return mapControl;
     }
 
-    public double getLongitude() {
-        return 0;
+        private void MapControl_ActualCameraChanged(MapControl sender, MapActualCameraChangedEventArgs args)
+        {
+            com.codename1.googlemaps.MapContainer.fireMapChangeEvent(mapId, (int)mapControl.ZoomLevel, mapControl.Center.Position.Latitude, mapControl.Center.Position.Longitude);
+        }
+
+        public double getLongitude() {
+            double res = 0;
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                res = mapControl.Center.Position.Longitude;
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+            return res;
     }
 
     public long beginPath() {
@@ -61,14 +129,34 @@ public class InternalNativeMapsImpl : IInternalNativeMapsImpl {
     }
 
     public void setPosition(double param, double param1) {
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                Windows.Devices.Geolocation.BasicGeoposition cityPosition = new BasicGeoposition() { Latitude = param, Longitude = param1 };
+                Geopoint cityCenter = new Geopoint(cityPosition);
+                mapControl.Center = cityCenter;
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+           
     }
 
     public float getZoom() {
-        return 0;
+            float res = 0;
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                res = (float)mapControl.ZoomLevel;
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+            return res;
     }
 
     public void setZoom(double param, double param1, float param2) {
-    }
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                Windows.Devices.Geolocation.BasicGeoposition cityPosition = new BasicGeoposition() { Latitude = param, Longitude = param1 };
+                Geopoint cityCenter = new Geopoint(cityPosition);
+                mapControl.Center = cityCenter;
+                mapControl.ZoomLevel = param2;
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+           
+        }
 
     public void deinitialize() {
     }
@@ -78,7 +166,12 @@ public class InternalNativeMapsImpl : IInternalNativeMapsImpl {
     }
 
     public int getMinZoom() {
-        return 0;
+            int res = 0;
+            SilverlightImplementation.dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+               res = (int)mapControl.MinZoomLevel;
+            }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+            return res;
     }
 
     public void addToPath(long param, double param1, double param2) {
@@ -95,7 +188,7 @@ public class InternalNativeMapsImpl : IInternalNativeMapsImpl {
     }
 
     public bool isSupported() {
-        return false;
+        return com.codename1.ui.Display.getInstance().getProperty(TOKEN_KEY, null) != null ;
     }
 
 }

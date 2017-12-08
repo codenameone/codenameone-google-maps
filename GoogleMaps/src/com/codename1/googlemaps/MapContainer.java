@@ -793,10 +793,13 @@ public class MapContainer extends Container {
             try {
                 String xStr = coord.substring(0, coord.indexOf(" "));
                 String yStr = coord.substring(coord.indexOf(" ")+1);
-                return new Point(
+                Point out =  new Point(
                         (int)Double.parseDouble(xStr), 
                         (int)Double.parseDouble(yStr)
                 );
+                //out.setX(out.getX() + getAbsoluteX());
+                //out.setY(out.getY() + getAbsoluteY());
+                return out;
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -816,7 +819,14 @@ public class MapContainer extends Container {
         return getScreenCoordinate(c.getLatitude(), c.getLongitude());
     }
 
-    static void fireMapChangeEvent(int mapId, final int zoom, final double lat, final double lon) {
+    /**
+     * @deprecated For internal use only.   This is only public to allow access from the internal UWP implementation because IKVM doesn't seem to allow access to package-private methods.
+     * @param mapId
+     * @param zoom
+     * @param lat
+     * @param lon 
+     */
+    public static void fireMapChangeEvent(int mapId, final int zoom, final double lat, final double lon) {
         final MapContainer mc = instances.get(mapId);
         if(mc != null) {
             if(!Display.getInstance().isEdt()) {
