@@ -46,6 +46,7 @@ import com.codename1.ui.geom.Point;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.util.EventDispatcher;
 import com.codename1.util.StringUtil;
+import com.codename1.util.SuccessCallback;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import java.util.List;
  * @author Shai Almog
  */
 public class MapContainer extends Container {
+    private boolean debug;
     /**
      * Map type for native maps
      */
@@ -147,6 +149,10 @@ public class MapContainer extends Container {
      */
     private MapContainer(MapProvider provider, final String htmlApiKey) {
         super(new BorderLayout());
+        if ("true".equals(Display.getInstance().getProperty("MapContainer.debug", "false"))) {
+            Log.p("MapContainer debug mode ON");
+            debug = true;
+        }
         if (provider == null && "win".equals(Display.getInstance().getPlatformName())) {
             
             // Right now UWP gives an NPE when we use the internal browser
@@ -221,6 +227,7 @@ public class MapContainer extends Container {
     private class BrowserBridge {
         List<Runnable> onReady = new ArrayList<Runnable>();
         private JSObject bridge;
+        private JavascriptContext ctx;
         
         BrowserBridge() {
             
@@ -259,6 +266,17 @@ public class MapContainer extends Container {
                 if (ctr++ > 500) {
                     throw new RuntimeException("Waited too long for browser bridge");
                 }
+                checkBridgeReady(new SuccessCallback<JSObject>() {
+
+                    public void onSucess(JSObject value) {
+                        if (value != null) {
+                            bridge = value;
+                        }
+                    }
+                    
+                });
+                
+            
                 Display.getInstance().invokeAndBlock(new Runnable() {
 
                     public void run() {
@@ -276,8 +294,25 @@ public class MapContainer extends Container {
         }
     }
     
-    private void initBrowserComponent(String htmlApiKey) {
+    private void checkBridgeReady(SuccessCallback<JSObject> callback) {
+        if (internalBrowser == null) {
+            callback.onSucess(null);
+            return;
+        }
         
+        JavascriptContext ctx = browserBridge.ctx;
+        if (ctx == null) {
+            //ctx = new JavascriptContext(internalBrowser);
+        }
+        if (ctx != null) {
+            ctx.getAsync("window.com_codename1_googlemaps_MapContainer_bridge", callback);
+        }
+    }
+    
+    private void initBrowserComponent(String htmlApiKey) {
+        if (debug) {
+            Log.e(new RuntimeException("Initializing Browser Component.  This stack trace is just for tracking purposes.  It is NOT a real exception"));
+        }
         //System.out.println("About to check location");
         Location loc = LocationManager.getLocationManager().getLastKnownLocation();
         try {
@@ -290,10 +325,17 @@ public class MapContainer extends Container {
             str = StringUtil.replaceAll(str, "//origin = MAPCONTAINER_ORIGIN", "origin = {lat: "+ loc.getLatitude() + ", lng: "  + loc.getLongitude() + "};");
             //System.out.println("Finished setting origin");
             internalBrowser.setPage(str, "/");
+            if (debug) {
+                Log.e(new RuntimeException("Adding onLoad Listener.  This stack trace is just for tracking purposes.  It is NOT a real exception"));
+            }
             internalBrowser.addWebEventListener("onLoad", new ActionListener() {
 
                 public void actionPerformed(ActionEvent evt) {
+                    if (debug) {
+                        Log.e(new RuntimeException("Inside onLoad Listener.  This stack trace is just for tracking purposes.  It is NOT a real exception"));
+                    }
                     JavascriptContext ctx = new JavascriptContext(internalBrowser);
+                    browserBridge.ctx = ctx;
                     JSObject jsProxy = (JSObject)ctx.get("{}");
                     jsProxy.set("fireTapEvent", new JSFunction() {
 
@@ -329,16 +371,29 @@ public class MapContainer extends Container {
                     JSObject window = (JSObject)ctx.get("window");
                     window.set("com_codename1_googlemaps_MapContainer", jsProxy);
                     //System.out.println("About to load bridge");
+                    if (debug) {
+                        Log.e(new RuntimeException("About to get browser bridge.  This stack trace is just for tracking purposes.  It is NOT a real exception"));
+                    }
                     browserBridge.bridge = (JSObject)window.get("com_codename1_googlemaps_MapContainer_bridge");
+                    if (debug) {
+                        Log.e(new RuntimeException("Retrieved browser bridge: "+(browserBridge.bridge==null?"null":"<JSObject>")+".  This stack trace is just for tracking purposes.  It is NOT a real exception"));
+                    }
                     //if (browserBridge.bridge != null) {
                     //    System.out.println("BrowserBridge pointer at 307 is "+browserBridge.bridge.toJSPointer());
                     //}
                     //System.out.println("Bridge is "+browserBridge.bridge);
                     if (browserBridge.bridge == null) {
+                        if (debug) {
+                            Log.p("Browser bridge was null, so we are registering an onReady listener to set browser bridge when it is ready");
+                        }
                         window.set("com_codename1_googlemaps_MapContainer_onReady", new JSFunction() {
 
                             public void apply(JSObject self, Object[] args) {
                                 //System.out.println("Browser bridge in JS onReady callback");
+                                if (debug) {
+                                    Log.e(new RuntimeException("In onReady callback.  This stack trace is just for tracking purposes.  It is NOT a real exception"));
+                                    Log.p("Inside onReady callback from JS bridge to set the bridge "+(args[0]==null?"null":"<JSObject>"));
+                                }
                                 browserBridge.bridge = (JSObject)args[0];
                                 //System.out.println("Browser bridge pointer at 316 is "+browserBridge.bridge.toJSPointer());
                             }
@@ -347,6 +402,9 @@ public class MapContainer extends Container {
                     }
                 
                     ///System.out.println("Bridge is ready");
+                    if (debug) {
+                        Log.p("About to fire browserBridge.ready(null) event to kick things off");
+                    }
                     browserBridge.ready(null);
                 }
             });
