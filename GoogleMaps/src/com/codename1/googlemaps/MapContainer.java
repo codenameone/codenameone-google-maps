@@ -20,8 +20,8 @@ package com.codename1.googlemaps;
 import com.codename1.components.WebBrowser;
 import com.codename1.io.Log;
 import com.codename1.io.Util;
-import com.codename1.javascript.JSFunction;
-import com.codename1.javascript.JSObject;
+//import com.codename1.javascript.JSFunction;
+//import com.codename1.javascript.JSObject;
 import com.codename1.javascript.JavascriptContext;
 import com.codename1.location.Location;
 import com.codename1.location.LocationManager;
@@ -37,6 +37,7 @@ import com.codename1.maps.providers.MapProvider;
 import com.codename1.maps.providers.OpenStreetMapProvider;
 import com.codename1.system.NativeLookup;
 import com.codename1.ui.BrowserComponent;
+import com.codename1.ui.BrowserComponent.JSRef;
 import com.codename1.ui.Display;
 import com.codename1.ui.EncodedImage;
 import com.codename1.ui.PeerComponent;
@@ -91,6 +92,8 @@ public class MapContainer extends Container {
     
     private EventDispatcher tapListener;
     private EventDispatcher longPressListener;
+    
+    private static final String BRIDGE="com_codename1_googlemaps_MapContainer_bridge";
     
     /**
      * Default constructor creates an instance with the standard OpenStreetMap version if necessary
@@ -226,7 +229,7 @@ public class MapContainer extends Container {
     
     private class BrowserBridge {
         List<Runnable> onReady = new ArrayList<Runnable>();
-        private JSObject bridge;
+        boolean ready;
         private JavascriptContext ctx;
         
         BrowserBridge() {
@@ -234,7 +237,7 @@ public class MapContainer extends Container {
         }
         
         private void ready(Runnable r) {
-            if (bridge != null) {
+            if (ready) {
                 if (!onReady.isEmpty()) {
                     List<Runnable> tmp = new ArrayList<Runnable>();
                     synchronized(onReady) {
@@ -262,19 +265,10 @@ public class MapContainer extends Container {
         private void waitForReady() {
             //System.out.println("Waiting for ready");
             int ctr = 0;
-            while (bridge == null) {
+            while (!ready) {
                 if (ctr++ > 500) {
                     throw new RuntimeException("Waited too long for browser bridge");
                 }
-                checkBridgeReady(new SuccessCallback<JSObject>() {
-
-                    public void onSucess(JSObject value) {
-                        if (value != null) {
-                            bridge = value;
-                        }
-                    }
-                    
-                });
                 
             
                 Display.getInstance().invokeAndBlock(new Runnable() {
@@ -293,21 +287,7 @@ public class MapContainer extends Container {
             
         }
     }
-    
-    private void checkBridgeReady(SuccessCallback<JSObject> callback) {
-        if (internalBrowser == null) {
-            callback.onSucess(null);
-            return;
-        }
-        
-        JavascriptContext ctx = browserBridge.ctx;
-        if (ctx == null) {
-            //ctx = new JavascriptContext(internalBrowser);
-        }
-        if (ctx != null) {
-            ctx.getAsync("window.com_codename1_googlemaps_MapContainer_bridge", callback);
-        }
-    }
+   
     
     private void initBrowserComponent(String htmlApiKey) {
         if (debug) {
@@ -334,72 +314,62 @@ public class MapContainer extends Container {
                     if (debug) {
                         Log.e(new RuntimeException("Inside onLoad Listener.  This stack trace is just for tracking purposes.  It is NOT a real exception"));
                     }
-                    JavascriptContext ctx = new JavascriptContext(internalBrowser);
-                    browserBridge.ctx = ctx;
-                    JSObject jsProxy = (JSObject)ctx.get("{}");
-                    jsProxy.set("fireTapEvent", new JSFunction() {
+                    //JavascriptContext ctx = new JavascriptContext(internalBrowser);
+                    //browserBridge.ctx = ctx;
+                    internalBrowser.execute("com_codename1_googlemaps_MapContainer = {}");
+                    internalBrowser.addJSCallback("com_codename1_googlemaps_MapContainer.fireTapEvent = function(x,y){callback.onSuccess(x+','+y)};", new SuccessCallback<BrowserComponent.JSRef>() {
 
-                        public void apply(JSObject self, Object[] args) {
-                            fireTapEvent(((Double)args[0]).intValue() + internalBrowser.getAbsoluteX(), ((Double)args[1]).intValue() + internalBrowser.getAbsoluteY());
+                        public void onSucess(BrowserComponent.JSRef value) {
+                            String[] parts = Util.split(value.getValue(), ",");
+                            int x = new Double(Double.parseDouble(parts[0])).intValue();
+                            int y = new Double(Double.parseDouble(parts[1])).intValue();
+                            fireTapEvent(x + internalBrowser.getAbsoluteX(), y + internalBrowser.getAbsoluteY());
                         }
                     });
-                    jsProxy.set("fireLongPressEvent", new JSFunction() {
+                    internalBrowser.addJSCallback("com_codename1_googlemaps_MapContainer.fireLongPressEvent = function(x,y){callback.onSuccess(x+','+y)};", new SuccessCallback<BrowserComponent.JSRef>() {
 
-                        public void apply(JSObject self, Object[] args) {
-                            fireLongPressEvent(((Double)args[0]).intValue() + internalBrowser.getAbsoluteX(), ((Double)args[1]).intValue() + internalBrowser.getAbsoluteY());
+                        public void onSucess(BrowserComponent.JSRef value) {
+                            String[] parts = Util.split(value.getValue(), ",");
+                            int x = new Double(Double.parseDouble(parts[0])).intValue();
+                            int y = new Double(Double.parseDouble(parts[1])).intValue();
+                            fireLongPressEvent(x + internalBrowser.getAbsoluteX(), y + internalBrowser.getAbsoluteY());
                         }
                     });
                     
-                    jsProxy.set("fireMapChangeEvent", new JSFunction() {
+                    internalBrowser.addJSCallback("com_codename1_googlemaps_MapContainer.fireMapChangeEvent = function(zoom,lat,lon){callback.onSuccess(zoom+','+lat+','+lon)};", new SuccessCallback<BrowserComponent.JSRef>() {
 
-                        public void apply(JSObject self, Object[] args) {
-                            int zoom = ((Double)args[0]).intValue();
-                            double lat = (Double)args[1];
-                            double lon = (Double)args[2];
+                        public void onSucess(BrowserComponent.JSRef value) {
+                            String[] parts = Util.split(value.getValue(), ",");
+                            int zoom = Integer.parseInt(parts[0]);
+                            double lat  = Double.parseDouble(parts[1]);
+                            double lon = Double.parseDouble(parts[2]);
                             fireMapListenerEvent(zoom, lat, lon);
                         }
-                        
                     });
-                    
-                    jsProxy.set("fireMarkerEvent", new JSFunction() {
-                        public void apply(JSObject self, Object[] args) {
-                            int key = ((Double)args[0]).intValue();
-                            fireMarkerEvent(key);
-                        }
-                    });
-                    
-                    JSObject window = (JSObject)ctx.get("window");
-                    window.set("com_codename1_googlemaps_MapContainer", jsProxy);
-                    //System.out.println("About to load bridge");
-                    if (debug) {
-                        Log.e(new RuntimeException("About to get browser bridge.  This stack trace is just for tracking purposes.  It is NOT a real exception"));
-                    }
-                    browserBridge.bridge = (JSObject)window.get("com_codename1_googlemaps_MapContainer_bridge");
-                    if (debug) {
-                        Log.e(new RuntimeException("Retrieved browser bridge: "+(browserBridge.bridge==null?"null":"<JSObject>")+".  This stack trace is just for tracking purposes.  It is NOT a real exception"));
-                    }
-                    //if (browserBridge.bridge != null) {
-                    //    System.out.println("BrowserBridge pointer at 307 is "+browserBridge.bridge.toJSPointer());
-                    //}
-                    //System.out.println("Bridge is "+browserBridge.bridge);
-                    if (browserBridge.bridge == null) {
-                        if (debug) {
-                            Log.p("Browser bridge was null, so we are registering an onReady listener to set browser bridge when it is ready");
-                        }
-                        window.set("com_codename1_googlemaps_MapContainer_onReady", new JSFunction() {
+                   
+                    internalBrowser.addJSCallback("com_codename1_googlemaps_MapContainer.fireMarkerEvent = function(id){callback.onSuccess(id)};", new SuccessCallback<BrowserComponent.JSRef>() {
 
-                            public void apply(JSObject self, Object[] args) {
-                                //System.out.println("Browser bridge in JS onReady callback");
-                                if (debug) {
-                                    Log.e(new RuntimeException("In onReady callback.  This stack trace is just for tracking purposes.  It is NOT a real exception"));
-                                    Log.p("Inside onReady callback from JS bridge to set the bridge "+(args[0]==null?"null":"<JSObject>"));
-                                }
-                                browserBridge.bridge = (JSObject)args[0];
-                                //System.out.println("Browser bridge pointer at 316 is "+browserBridge.bridge.toJSPointer());
+                        public void onSucess(BrowserComponent.JSRef value) {
+                            fireMarkerEvent(value.getInt());
+                        }
+                    });
+                    
+                    internalBrowser.execute("callback.onSuccess(com_codename1_googlemaps_MapContainer_bridge)", new SuccessCallback<BrowserComponent.JSRef>() {
+
+                        public void onSucess(BrowserComponent.JSRef value) {
+                            if ("null".equals(value.getValue()) || value.getJSType() == BrowserComponent.JSType.UNDEFINED) {
+                                internalBrowser.execute("com_codename1_googlemaps_MapContainer_onReady=function(bridge){callback.onSuccess(bridge)};", new SuccessCallback<BrowserComponent.JSRef>() {
+
+                                    public void onSucess(BrowserComponent.JSRef value) {
+                                        browserBridge.ready = true;
+                                    }
+                                });
+                            } else {
+                                browserBridge.ready = true;
                             }
-
-                        });
-                    }
+                        }
+                    });
+                    
                 
                     ///System.out.println("Bridge is ready");
                     if (debug) {
@@ -519,16 +489,19 @@ public class MapContainer extends Container {
                     uri = WebBrowser.createDataURI(icon.getImageData(), "image/png");
                 } 
                 browserBridge.waitForReady();
-                long key = ((Double)browserBridge.bridge.call("addMarker", new Object[]{
+                JSRef res = internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".addMarker(${0}, ${1}, ${2}, ${3}, ${4}));", 
+                
+                //long key = ((Double)browserBridge.bridge.call("addMarker", new Object[]{
                     uri,
                     location.getLatitude(),
                     location.getLongitude(),
                     text,
                     longText
-                })).intValue();
+                //})).intValue();
+                );
                 MapObject o = new MapObject();
                 
-                o.mapKey = key;
+                o.mapKey = res.getInt();
                 o.callback = onClick;
                 markers.add(o);
                 //System.out.println("MapKey added "+o.mapKey);
@@ -579,11 +552,11 @@ public class MapContainer extends Container {
                     json.append("{\"lat\":").append(c.getLatitude()).append(", \"lon\": ").append(c.getLongitude()).append("}");
                 }
                 json.append("]");
-                long key = ((Double)browserBridge.bridge.call("addPathAsJSON", new Object[]{json.toString()})).intValue();
-                
+                //long key = ((Double)browserBridge.bridge.call("addPathAsJSON", new Object[]{json.toString()})).intValue();
+                JSRef res = internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".addPathAsJSON(${0}));", json.toString());
                 
                 MapObject o = new MapObject();
-                o.mapKey = key;
+                o.mapKey = res.getInt();
                 markers.add(o);
                 return o;
             }
@@ -601,7 +574,8 @@ public class MapContainer extends Container {
                 return internalLightweightCmp.getMaxZoomLevel();
             } else {
                 browserBridge.waitForReady();
-                return browserBridge.bridge.callInt("getMaxZoom");
+                //return browserBridge.bridge.callInt("getMaxZoom");
+                return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getMaxZoom())").getInt();
             }
         }
         return internalNative.getMaxZoom();
@@ -618,7 +592,7 @@ public class MapContainer extends Container {
                 return internalLightweightCmp.getMinZoomLevel();
             } else {
                 browserBridge.waitForReady();
-                return browserBridge.bridge.callInt("getMinZoom");
+                return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getMinZoom())").getInt();
             }
         }
         return internalNative.getMinZoom();
@@ -638,7 +612,8 @@ public class MapContainer extends Container {
                     internalLightweightCmp.removeLayer(obj.lines);
                 } else {
                     browserBridge.waitForReady();
-                    browserBridge.bridge.call("removeMapElement", new Object[]{obj.mapKey});
+                    //browserBridge.bridge.call("removeMapElement", new Object[]{obj.mapKey});
+                    internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".removeMapElement(${0}))", obj.mapKey);
                     
                 }
             } else {
@@ -648,7 +623,8 @@ public class MapContainer extends Container {
                     }
                 } else {
                     browserBridge.waitForReady();
-                    browserBridge.bridge.call("removeMapElement", new Object[]{obj.mapKey});
+                   // browserBridge.bridge.call("removeMapElement", new Object[]{obj.mapKey});
+                    internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".removeMapElement(${0}))", obj.mapKey);
                     
                 }
                 
@@ -670,7 +646,8 @@ public class MapContainer extends Container {
                 points = null;
             } else {
                 browserBridge.waitForReady();
-                browserBridge.bridge.call("removeAllMarkers");
+                //browserBridge.bridge.call("removeAllMarkers");
+                internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".removeAllMarkers())");
                 markers.clear();
             }
         }
@@ -689,7 +666,8 @@ public class MapContainer extends Container {
                 internalLightweightCmp.zoomTo(crd, zoom);
             } else {
                 browserBridge.waitForReady();
-                browserBridge.bridge.call("zoom", new Object[]{ crd.getLatitude(), crd.getLongitude(), zoom});
+                //browserBridge.bridge.call("zoom", new Object[]{ crd.getLatitude(), crd.getLongitude(), zoom});
+                internalBrowser.execute(BRIDGE+".zoom(${0}, ${1}, ${2})", new Object[]{ crd.getLatitude(), crd.getLongitude(), zoom});
                 
             }
         }
@@ -707,7 +685,8 @@ public class MapContainer extends Container {
                 return internalLightweightCmp.getZoomLevel();
             }
             browserBridge.waitForReady();
-            return browserBridge.bridge.callInt("getZoom");
+            //return browserBridge.bridge.callInt("getZoom");
+            return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getZoom())").getInt();
             
         }        
     }
@@ -732,7 +711,8 @@ public class MapContainer extends Container {
             } else {
                 // browser component
                 browserBridge.waitForReady();
-                browserBridge.bridge.call("setMapType", new Object[]{type});
+                //browserBridge.bridge.call("setMapType", new Object[]{type});
+                internalBrowser.execute(BRIDGE+".setMapType(${0})", new Object[]{type});
             }
         }
     }
@@ -746,7 +726,8 @@ public class MapContainer extends Container {
             return internalNative.getMapType();
         } else if (browserBridge != null) {
             browserBridge.waitForReady();
-            return browserBridge.bridge.callInt("getMapType");
+            //return browserBridge.bridge.callInt("getMapType");
+            return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getMapType())").getInt();
         }       
         return MAP_TYPE_NONE;
     }
@@ -763,10 +744,12 @@ public class MapContainer extends Container {
                 internalLightweightCmp.zoomTo(crd, internalLightweightCmp.getZoomLevel());
             } else {
                 browserBridge.waitForReady();
-                browserBridge.bridge.call(
-                        "setCameraPosition", 
-                        new Object[]{crd.getLatitude(), crd.getLongitude()}
-                );
+                //browserBridge.bridge.call(
+                //        "setCameraPosition", 
+                //        new Object[]{crd.getLatitude(), crd.getLongitude()}
+                //);
+                internalBrowser.execute(BRIDGE+".setCameraPosition(${0}, ${1})", new Object[]{crd.getLatitude(), crd.getLongitude()});
+                  
             }
             return;
         }
@@ -783,7 +766,8 @@ public class MapContainer extends Container {
                 return internalLightweightCmp.getCenter();
             } else {
                 browserBridge.waitForReady();
-                String pos = browserBridge.bridge.callString("getCameraPosition");
+                //String pos = browserBridge.bridge.callString("getCameraPosition");
+                String pos = internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getCameraPosition())").toString();
                 try {
                     String latStr = pos.substring(0, pos.indexOf(" "));
                     String lnStr = pos.substring(pos.indexOf(" ")+1);
@@ -818,7 +802,8 @@ public class MapContainer extends Container {
             //if (res instanceof Double) {
             //    int i = 0;
             //}
-            String coord = (String)browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
+            //String coord = (String)browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
+            String coord = internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getCoordAtPosition(${0}, ${1}))", x, y).toString();
             try {
                 String xStr = coord.substring(0, coord.indexOf(" "));
                 String yStr = coord.substring(coord.indexOf(" ")+1);
@@ -847,7 +832,8 @@ public class MapContainer extends Container {
                 return p;
             }
             browserBridge.waitForReady();
-            String coord = (String)browserBridge.bridge.call("getScreenCoord", new Object[]{lat, lon});
+            //String coord = (String)browserBridge.bridge.call("getScreenCoord", new Object[]{lat, lon});
+            String coord = (String)internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getScreenCoord(${0}, ${1}))", new Object[]{lat, lon}).toString();
             try {
                 String xStr = coord.substring(0, coord.indexOf(" "));
                 String yStr = coord.substring(coord.indexOf(" ")+1);
