@@ -29,6 +29,7 @@ import com.codename1.maps.BoundingBox;
 import com.codename1.maps.Coord;
 import com.codename1.maps.MapComponent;
 import com.codename1.maps.MapListener;
+import com.codename1.maps.Mercator;
 import com.codename1.maps.layers.LinesLayer;
 import com.codename1.maps.layers.PointLayer;
 import com.codename1.maps.layers.PointsLayer;
@@ -43,15 +44,19 @@ import com.codename1.ui.EncodedImage;
 import com.codename1.ui.PeerComponent;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
+import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.geom.Point;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.util.EventDispatcher;
+import com.codename1.util.MathUtil;
 import com.codename1.util.StringUtil;
 import com.codename1.util.SuccessCallback;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * An abstract Map API that encapsulates the device native map and seamlessly replaces
@@ -663,7 +668,7 @@ public class MapContainer extends Container {
             internalNative.setZoom(crd.getLatitude(), crd.getLongitude(), zoom);
         } else {
             if(internalLightweightCmp != null) {
-                internalLightweightCmp.zoomTo(crd, zoom);
+                internalLightweightCmp.zoomTo(crd, (int)zoom);
             } else {
                 browserBridge.waitForReady();
                 //browserBridge.bridge.call("zoom", new Object[]{ crd.getLatitude(), crd.getLongitude(), zoom});
@@ -672,6 +677,99 @@ public class MapContainer extends Container {
             }
         }
     }
+    
+    
+    
+    /**
+     * Pans and zooms to fit the given bounding box.
+     * @param bounds The bounding box to display.
+     */
+    public void fitBounds(BoundingBox bounds) {
+        Coord c = new Coord(
+                (bounds.getNorthEast().getLatitude() + bounds.getSouthWest().getLatitude())/2,
+                (bounds.getNorthEast().getLongitude() + bounds.getSouthWest().getLongitude())/2
+        );
+        double currZoom = getZoom();
+        BoundingBox currBbox = getBoundingBox();
+        Coord currC = new Coord(
+                (currBbox.getNorthEast().getLatitude() + currBbox.getSouthWest().getLatitude())/2,
+                (currBbox.getNorthEast().getLongitude() + currBbox.getSouthWest().getLongitude())/2
+        );
+        
+        double currMetersPerPx = 156543.03392 * Math.cos(currC.getLatitude() * Math.PI / 180) / MathUtil.pow(2, currZoom);
+        double targetMetersPerPx = 156543.03392 * Math.cos(c.getLatitude() * Math.PI / 180) / MathUtil.pow(2, currZoom);
+        double adjustmentFactor = targetMetersPerPx / currMetersPerPx;
+        //Log.p("Adjustment factor ="+adjustmentFactor);
+        
+        Mercator proj = new Mercator();
+        BoundingBox currProjected = proj.fromWGS84(currBbox);
+        BoundingBox targetProjected = proj.fromWGS84(bounds);
+        
+        double zoom = currZoom;
+        double currLatDiff = Math.abs(currProjected.latitudeDifference());
+        double currLngDiff = Math.abs(currProjected.longitudeDifference());
+        
+        if (currLatDiff == 0) {
+            currLatDiff = currMetersPerPx * getHeight();
+        }
+        if (currLatDiff == 0) {
+            currLatDiff = currMetersPerPx * Display.getInstance().getDisplayHeight();
+        }
+        if (currLngDiff == 0) {
+            currLngDiff = currMetersPerPx * getWidth();
+        }
+        if (currLngDiff == 0) {
+            currLngDiff = currMetersPerPx * Display.getInstance().getDisplayWidth();
+        }
+        
+        
+        double targetLatDiff = Math.max(Math.abs(targetProjected.latitudeDifference()), 0.0001);
+        double targetLngDiff = Math.max(Math.abs(targetProjected.longitudeDifference()), 0.0001);
+        
+        double latDiff = currLatDiff;
+        double lngDiff = currLngDiff;
+        //Log.p("LatDiff="+latDiff+", LngDiff="+lngDiff+", targetLatDiff="+targetLatDiff+", targetLngDiff="+targetLngDiff+", adjustmentFactor="+adjustmentFactor);
+        //Log.p("zoom="+zoom);
+        
+        while (targetLatDiff <  latDiff && targetLngDiff * adjustmentFactor < lngDiff) {
+            zoom += 1.0;
+            latDiff /=2.0;
+            lngDiff /=2.0;
+        }
+        //Log.p("Finished zooming in");
+        while (targetLatDiff > latDiff || targetLngDiff * adjustmentFactor > lngDiff) {
+            zoom -= 1.0;
+            latDiff *= 2.0;
+            lngDiff *= 2.0;
+            //Log.p("latDiff now="+latDiff+", lngDiff now = "+lngDiff);
+        }
+        //Log.p("Finished zooming out");
+        //Log.p("After: latDiff="+latDiff+", lngDiff="+lngDiff+", zoom="+Math.floor(zoom));
+        
+        zoom(c, (int)Math.floor(zoom));
+        //setCameraPosition(c);
+        //Log.p("Setting center to "+c);
+        //Log.p("In order to fit bounds "+bounds);
+        /*
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                Display.getInstance().callSerially(new Runnable() {
+                    public void run() {
+                        Coord center = MapContainer.this.getCameraPosition();
+                        Log.p("New Center is "+center);
+                        Log.p("New bbox is "+getBoundingBox());
+                    }
+                });
+            }
+
+        }, 1000);
+        */
+        
+    }
+    
     
     /**
      * Returns the current zoom level
@@ -863,6 +961,37 @@ public class MapContainer extends Container {
         return getScreenCoordinate(c.getLatitude(), c.getLongitude());
     }
 
+    /**
+     * Returns the screen points for a list of coordinates.  This is likely more efficient
+     * than calling {@link #getScreenCoordinate(com.codename1.maps.Coord) } for each coordinate
+     * in the list because this only involves a single call to the native layer.
+     * @param coords The coordinates to convert to points.
+     * @return A list of points relative to (0,0) of the map container.
+     */
+    public List<Point> getScreenCoordinates(List<Coord> coords) {
+        List<Point> out = new ArrayList<Point>(coords.size());
+        BoundingBox bbox = getBoundingBox();
+        Mercator proj = new Mercator();
+        BoundingBox projectedBox = proj.fromWGS84(bbox);
+        for (Coord crd : coords) {
+        
+            Coord projectedCrd = proj.fromWGS84(crd);
+            Point p;
+            if (getWidth() <= 0 || getHeight() <= 0) {
+                p = new Point(-100, -100);
+            } else {
+                //Point p = map.getScreenCoordinate(crd);
+                double projectedWidth = projectedBox.longitudeDifference();
+                double projectedHeight = projectedBox.latitudeDifference();
+                double xCoord = (projectedCrd.getLongitude() - projectedBox.getSouthWest().getLongitude()) / projectedWidth * getWidth();
+                double yCoord = (projectedBox.getNorthEast().getLatitude() - projectedCrd.getLatitude()) / projectedHeight * getHeight();
+                p = new Point((int)xCoord, (int)yCoord);
+            }
+            out.add(p);
+        }
+        return out;
+    }
+    
     /**
      * @deprecated For internal use only.   This is only public to allow access from the internal UWP implementation because IKVM doesn't seem to allow access to package-private methods.
      * @param mapId

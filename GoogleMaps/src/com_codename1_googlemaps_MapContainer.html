@@ -241,8 +241,9 @@
                 zoom: function(lat, lon, zoom){
                     
                     this.ready(function(){
-                        this.map.setCenter(new google.maps.LatLng(lat, lon));
                         this.map.setZoom(zoom);
+                        this.map.setCenter(new google.maps.LatLng(lat, lon));
+                        
                     });
                 },
                 getZoom: function(){
