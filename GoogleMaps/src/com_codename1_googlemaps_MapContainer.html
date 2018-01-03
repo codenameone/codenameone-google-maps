@@ -431,6 +431,7 @@
                 cancelClick = false;
                 return;
             }
+            // Note tap events return points relative to origin of MapContainer.
             var p = fromLatLngToPoint(evt.latLng, map);
             fireTapEvent(p.x, p.y);
 
@@ -438,6 +439,7 @@
         
         var inLongPress = false;
         google.maps.event.addListener(map, 'mousedown', function(evt) {
+            // Note tap events return points relative to origin of MapContainer
             var p = fromLatLngToPoint(evt.latLng, map);
             inLongPress = true;
             setTimeout(function() {

@@ -328,7 +328,7 @@ public class MapContainer extends Container {
                             String[] parts = Util.split(value.getValue(), ",");
                             int x = new Double(Double.parseDouble(parts[0])).intValue();
                             int y = new Double(Double.parseDouble(parts[1])).intValue();
-                            fireTapEvent(x + internalBrowser.getAbsoluteX(), y + internalBrowser.getAbsoluteY());
+                            fireTapEvent(x, y);
                         }
                     });
                     internalBrowser.addJSCallback("com_codename1_googlemaps_MapContainer.fireLongPressEvent = function(x,y){callback.onSuccess(x+','+y)};", new SuccessCallback<BrowserComponent.JSRef>() {
@@ -337,7 +337,7 @@ public class MapContainer extends Container {
                             String[] parts = Util.split(value.getValue(), ",");
                             int x = new Double(Double.parseDouble(parts[0])).intValue();
                             int y = new Double(Double.parseDouble(parts[1])).intValue();
-                            fireLongPressEvent(x + internalBrowser.getAbsoluteX(), y + internalBrowser.getAbsoluteY());
+                            fireLongPressEvent(x, y);
                         }
                     });
                     
@@ -1016,7 +1016,8 @@ public class MapContainer extends Container {
     
     /**
      * Adds a listener to user tapping on a map location, this shouldn't fire for 
-     * dragging.
+     * dragging.  Note that the (x, y) coordinate of tap events are relative to the 
+     * MapComponent origin, and not the screen origin.
      * 
      * @param e the tap listener
      */
@@ -1058,7 +1059,8 @@ public class MapContainer extends Container {
     
     /**
      * Adds a listener to user long pressing on a map location, this shouldn't fire for 
-     * dragging.
+     * dragging. Note the (x, y) coordinates of long press events are relative to the 
+     * origin of the MapContainer and not the screen origin.
      * 
      * @param e the tap listener
      */
