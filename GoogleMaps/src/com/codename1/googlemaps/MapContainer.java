@@ -39,6 +39,7 @@ import com.codename1.maps.providers.OpenStreetMapProvider;
 import com.codename1.system.NativeLookup;
 import com.codename1.ui.BrowserComponent;
 import com.codename1.ui.BrowserComponent.JSRef;
+import com.codename1.ui.BrowserComponent.JSType;
 import com.codename1.ui.Display;
 import com.codename1.ui.EncodedImage;
 import com.codename1.ui.PeerComponent;
@@ -232,10 +233,27 @@ public class MapContainer extends Container {
 
     private BrowserBridge browserBridge = new BrowserBridge();
     
+    
+    private void checkBridgeReady(final SuccessCallback<Boolean> callback) {
+         if (internalBrowser == null) {
+             callback.onSucess(false);
+             return;
+         }
+         internalBrowser.execute("callback.onSuccess(window.com_codename1_googlemaps_MapContainer_bridge)", new SuccessCallback<JSRef>() {
+
+             public void onSucess(JSRef value) {
+                 if (value.getJSType() == JSType.OBJECT || value.getJSType() == JSType.FUNCTION) {
+                     callback.onSucess(true);
+                 }
+             }
+         });
+         
+     }
+    
     private class BrowserBridge {
         List<Runnable> onReady = new ArrayList<Runnable>();
         boolean ready;
-        private JavascriptContext ctx;
+       // private JavascriptContext ctx;
         
         BrowserBridge() {
             
@@ -274,6 +292,15 @@ public class MapContainer extends Container {
                 if (ctr++ > 500) {
                     throw new RuntimeException("Waited too long for browser bridge");
                 }
+                checkBridgeReady(new SuccessCallback<Boolean>() {
+ 
+                     public void onSucess(Boolean value) {
+                         if (value != null && value) {
+                             ready = true;
+                         }
+                     }
+                     
+                 });
                 
             
                 Display.getInstance().invokeAndBlock(new Runnable() {
