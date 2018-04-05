@@ -32,7 +32,8 @@ public interface InternalNativeMaps extends NativeInterface {
     public int getMapType();
     public int getMaxZoom();
     public int getMinZoom();
-    public long addMarker(byte[] icon, double lat, double lon, String text, String longText, boolean callback);
+    public void setMarkerSize(int width, int height);
+    public long addMarker(byte[] icon, double lat, double lon, String text, String longText, boolean callback, float anchorU, float anchorV);
     public long beginPath();
     public void addToPath(long pathId, double lat, double lon);
     public long finishPath(long pathId);

@@ -26,7 +26,7 @@ GMSMapView *mapView;
     BOOL rotateGesture;
 }
 
--(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5;
+-(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5 param6:(float)param6 param7:(float)param7;
 -(long long)beginPath;
 -(void)setPosition:(double)param param1:(double)param1;
 -(float)getZoom;
@@ -46,6 +46,7 @@ GMSMapView *mapView;
 -(void)deinitialize;
 -(void)initialize;
 
+-(void)setMarkerSize:(int)param param1:(int)param1;
 -(void)calcScreenPosition:(double)param  param1:(double)param1;
 -(int)getScreenX;
 -(int) getScreenY;

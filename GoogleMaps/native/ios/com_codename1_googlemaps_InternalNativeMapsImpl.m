@@ -23,7 +23,12 @@ extern float scaleValue;
 
 @implementation com_codename1_googlemaps_InternalNativeMapsImpl
 
--(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5{
+-(void)setMarkerSize:(int)param param1:(int)param1 {
+    // Not needed right now.
+    // Only used by Javascript port
+}
+
+-(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5 param6:(float)param6 param7:(float)param7{
     __block GMSMarker *marker = nil;
     dispatch_sync(dispatch_get_main_queue(), ^{
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -31,6 +36,7 @@ extern float scaleValue;
         marker.position = CLLocationCoordinate2DMake(param1, param2);
         marker.title = param3;
         marker.snippet = param4;
+        marker.groundAnchor = CGPointMake(param6, param7);
         if(param != nil) {
             UIImage* img = nil;
             if ([[UIImage class] respondsToSelector:@selector(imageWithData:scale:)]){

@@ -30,6 +30,7 @@ import com.codename1.maps.Coord;
 import com.codename1.maps.MapComponent;
 import com.codename1.maps.MapListener;
 import com.codename1.maps.Mercator;
+import com.codename1.maps.Tile;
 import com.codename1.maps.layers.LinesLayer;
 import com.codename1.maps.layers.PointLayer;
 import com.codename1.maps.layers.PointsLayer;
@@ -40,14 +41,19 @@ import com.codename1.system.NativeLookup;
 import com.codename1.ui.BrowserComponent;
 import com.codename1.ui.BrowserComponent.JSRef;
 import com.codename1.ui.BrowserComponent.JSType;
+import com.codename1.ui.Component;
+import static com.codename1.ui.ComponentSelector.$;
 import com.codename1.ui.Display;
 import com.codename1.ui.EncodedImage;
+import com.codename1.ui.Image;
 import com.codename1.ui.PeerComponent;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.geom.Point;
 import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.LayeredLayout;
+import com.codename1.ui.plaf.Border;
 import com.codename1.ui.util.EventDispatcher;
 import com.codename1.util.MathUtil;
 import com.codename1.util.StringUtil;
@@ -56,8 +62,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * An abstract Map API that encapsulates the device native map and seamlessly replaces
@@ -84,10 +88,13 @@ public class MapContainer extends Container {
     
     private InternalNativeMaps internalNative;
     private MapComponent internalLightweightCmp;
+    private MapComponent dummyMapComponent;
     private BrowserComponent internalBrowser;
     private  JavascriptContext browserContext;
     private ArrayList<MapListener> listeners;
     private PointsLayer points;
+    private Container mapWrapper;
+    private Container mapLayoutWrapper;
     
     private ArrayList<MapObject> markers = new ArrayList<MapObject>();
     private static HashMap<Integer, MapContainer> instances = new HashMap<Integer, MapContainer>();
@@ -119,7 +126,11 @@ public class MapContainer extends Container {
             internalNative.initialize();
             getComponentAt(0).setVisible(true);
         }
+        ((MapLayout)mapLayoutWrapper.getLayout()).onInit();
     }
+
+    
+    
     
     /**
      * @inheritDoc
@@ -130,6 +141,7 @@ public class MapContainer extends Container {
         if(internalNative != null) {
             internalNative.deinitialize();
         }
+        ((MapLayout)mapLayoutWrapper.getLayout()).onDeinit();
         super.deinitialize();
         
     }
@@ -157,7 +169,18 @@ public class MapContainer extends Container {
      * @param provider the map provider
      */
     private MapContainer(MapProvider provider, final String htmlApiKey) {
-        super(new BorderLayout());
+        super(new LayeredLayout());
+        $(this).selectAllStyles().setPadding(0);
+        mapWrapper = new Container(new BorderLayout());
+        
+        add(mapWrapper);
+        mapLayoutWrapper = new Container();
+        mapLayoutWrapper.setScrollableX(false);
+        mapLayoutWrapper.setScrollableY(false);
+        $(mapWrapper, mapLayoutWrapper).selectAllStyles().setPadding(0).setMargin(0).setBorder(Border.createEmpty());
+        MapLayout mapLayout = new MapLayout(this, mapLayoutWrapper);
+        mapLayoutWrapper.setLayout(mapLayout);
+        add(mapLayoutWrapper);
         if ("true".equals(Display.getInstance().getProperty("MapContainer.debug", "false"))) {
             Log.p("MapContainer debug mode ON");
             debug = true;
@@ -174,12 +197,13 @@ public class MapContainer extends Container {
                 currentMapId++;
                 mapId = currentMapId;
                 PeerComponent p = internalNative.createNativeMap(mapId);
+                $(p).selectAllStyles().setPadding(0).setMargin(0).setBorder(Border.createEmpty());
                 
                 // can happen if Google play services failed or aren't installed on an Android device
                 if(p != null) {
                     //System.out.println("Adding native map "+p);
                     
-                    addComponent(BorderLayout.CENTER, p);
+                    mapWrapper.addComponent(BorderLayout.CENTER, p);
                     return;
                 } else {
                     //System.out.println("Failed to add native map");
@@ -218,22 +242,46 @@ public class MapContainer extends Container {
                     fireLongPressEvent(x, y);
                 }
             };
-            addComponent(BorderLayout.CENTER, internalLightweightCmp);
+            mapWrapper.addComponent(BorderLayout.CENTER, internalLightweightCmp);
         } else {
+            dummyMapComponent = new MapComponent(new OpenStreetMapProvider(){
+                Image img;
+
+
+                @Override
+                public Tile tileFor(BoundingBox bbox) {
+                    Dimension size = tileSize();
+                    if (img == null) {
+                        img = Image.createImage(size.getWidth(), size.getHeight());
+                    }
+
+                    return new Tile(size, bbox, img);
+                }
+
+
+
+            });
             internalBrowser = new BrowserComponent();
             internalBrowser.getAllStyles().setPadding(0,0,0,0);
             internalBrowser.getAllStyles().setMargin(0,0,0,0);
 
             initBrowserComponent(htmlApiKey);
             
-            addComponent(BorderLayout.CENTER, internalBrowser);
+            mapWrapper.addComponent(BorderLayout.CENTER, 
+                    $(LayeredLayout.encloseIn(dummyMapComponent, internalBrowser))
+                            .selectAllStyles()
+                            .setPadding(0)
+                            .setMargin(0)
+                            .setBorder(Border.createEmpty())
+                            .asComponent()
+            );
         }
         setRotateGestureEnabled(true);
     }
 
     private BrowserBridge browserBridge = new BrowserBridge();
     
-    
+    /*
     private void checkBridgeReady(final SuccessCallback<Boolean> callback) {
          if (internalBrowser == null) {
              callback.onSucess(false);
@@ -249,7 +297,7 @@ public class MapContainer extends Container {
          });
          
      }
-    
+    */
     private class BrowserBridge {
         List<Runnable> onReady = new ArrayList<Runnable>();
         boolean ready;
@@ -285,6 +333,7 @@ public class MapContainer extends Container {
             }
         }
         
+        /*
         private void waitForReady() {
             //System.out.println("Waiting for ready");
             int ctr = 0;
@@ -318,6 +367,7 @@ public class MapContainer extends Container {
             }
             
         }
+        */
     }
    
     
@@ -401,7 +451,7 @@ public class MapContainer extends Container {
                             }
                         }
                     });
-                    
+                    //internalBrowser.execute("try{google.maps.event.trigger(com_codename1_googlemaps_MapContainer_bridge.map, \"resize\");} catch(e){}");
                 
                     ///System.out.println("Bridge is ready");
                     if (debug) {
@@ -465,21 +515,224 @@ public class MapContainer extends Container {
     }
     
     /**
+     * A class to encapsulate parameters for adding markers to map.
+     */
+    public static class MarkerOptions {
+        private final EncodedImage icon;
+        private final Coord location;
+        private String text="";
+        private String longText="";
+        private ActionListener onClick;
+        private float anchorU = 0.5f;
+        private float anchorV = 1f;
+        
+        public MarkerOptions(Coord coord, EncodedImage icon) {
+            this.location = coord;
+            this.icon = icon;
+
+        }
+
+
+        /**
+         * Gets the icon image for this marker.
+         * @return the icon
+         */
+        public EncodedImage getIcon() {
+            return icon;
+        }
+
+        /**
+         * Gets the location of this marker
+         * @return the location
+         */
+        public Coord getLocation() {
+            return location;
+        }
+
+        /**
+         * Returns the text for this marker.
+         * @return the text
+         */
+        public String getText() {
+            return text;
+        }
+
+        /**
+         * Sets the text for this marker
+         * @param text the text to set
+         * @return Self for chaining
+         */
+        public MarkerOptions text(String text) {
+            this.text = text;
+            return this;
+        }
+
+        /**
+         * Gets the long text for this marker.
+         * @return the longText
+         */
+        public String getLongText() {
+            return longText;
+        }
+
+        /**
+         * Sets the long text for this marker.
+         * @param longText the longText to set
+         * @return Self for chaining.
+         */
+        public MarkerOptions longText(String longText) {
+            this.longText = longText;
+            return this;
+        }
+
+        /**
+         * Gets the onclick handler for this marker.
+         * @return the onClick
+         */
+        public ActionListener getOnClick() {
+            return onClick;
+        }
+
+        /**
+         * Sets the onclick handler for this marker.
+         * @param onClick the onClick to set
+         * @return Self for chaining.
+         */
+        public MarkerOptions onClick(ActionListener onClick) {
+            this.onClick = onClick;
+            return this;
+        }
+
+        /**
+         * Gets the horizontal alignment of this marker in (u,v) coordinates.  
+         * 0.0 = align left edge with coord. 0.5 = align center.  1.0 = align right edge with coord.
+         * @return the anchorU
+         */
+        public float getAnchorU() {
+            return anchorU;
+        }
+
+        /**
+         * Sets the horizontal alignment of this marker in (u,v) coordinates.
+         * 0.0 = align left edge with coord. 0.5 = align center.  1.0 = align right edge with coord.
+         * @param anchorU the anchorU to set
+         */
+        public MarkerOptions anchorU(float anchorU) {
+            this.anchorU = anchorU;
+            return this;
+        }
+
+        /**
+         * Gets the vertical alignment of this marker in (u,v) coordinates.
+         * 0.0 = align top edge with coord. 0.5 = align center.  1.0 = align bottom edge with coord.
+         * @return the anchorV
+         */
+        public float getAnchorV() {
+            return anchorV;
+        }
+
+        /**
+         * Sets the vertical alignment of this marker in (u,v) coordinates.
+         * 0.0 = align top edge with coord. 0.5 = align center.  1.0 = align bottom edge with coord.
+         * @param anchorV the anchorV to set
+         */
+        public MarkerOptions anchorV(float anchorV) {
+            this.anchorV = anchorV;
+            return this;
+        }
+        
+        /**
+         * Sets the horizontal and vertical alignments of this marker in (u,v) coordinates.
+         * @param anchorU 0.0 = align top edge with coord. 0.5 = align center.  1.0 = align bottom edge with coord.
+         * @param anchorV 0.0 = align top edge with coord. 0.5 = align center.  1.0 = align bottom edge with coord.
+         * @return Self for chaining.
+         */
+        public MarkerOptions anchor(float anchorU, float anchorV) {
+            this.anchorU = anchorU;
+            this.anchorV = anchorV;
+            return this;
+        }
+    }
+    
+    /**
+     * Adds a component as a marker on the map.
+     * @param marker The component to be placed on the map.
+     * @param location The location of marker.
+     * @param anchorU The horizontal alignment of the marker. 0.0 = align top edge with coord. 0.5 = align center.  1.0 = align bottom edge with coord.
+     * @param anchorV The vertical alignment of the marker.  0.0 = align top edge with coord. 0.5 = align center.  1.0 = align bottom edge with coord.
+     */
+    public void addMarker(Component marker, Coord location, float anchorU, float anchorV) {
+        mapLayoutWrapper.add(location, marker);
+        MapLayout.setHorizontalAlignment(marker, anchorU);
+        MapLayout.setVerticalAlignment(marker, anchorV);
+        
+    }
+    
+    /**
+     * Adds a component as a marker on the map with default horizontal/vertical alignment (0.5, 1.0)
+     * @param marker The component to add as a marker.
+     * @param location The location of the marker.
+     * @return A MapObject that can be used for later removing the marker.
+     */
+    public MapObject addMarker(Component marker, Coord location) {
+        addMarker(marker, location, 0.5f, 1f);
+        MapObject o = new MapObject();
+        o.componentMarker = marker;
+        return o;
+    }
+    
+    /**
+     * Removes a component marker that was previously added using {@link #addMarker(com.codename1.ui.Component, com.codename1.maps.Coord) }
+     * @param marker 
+     */
+    public void removeMarker(Component marker) {
+        mapLayoutWrapper.removeComponent(marker);
+    }
+    
+    
+    
+    
+    /**
      * Adds a marker to the map with the given attributes
      * @param icon the icon, if the native maps are used this value can be null to use the default marker
      * @param location the coordinate for the marker
      * @param text the string associated with the location
      * @param longText longer description associated with the location
      * @param onClick will be invoked when the user clicks the marker. Important: events are only sent when the native map is in initialized state
-     * @return marker reference object that should be used when removing the marker
+     * @return marker reference object that should be used when removing the marker 
      */
     public MapObject addMarker(EncodedImage icon, Coord location, String text, String longText, final ActionListener onClick) {
+        return addMarker(new MarkerOptions(location, icon)
+                .text(text)
+                .longText(longText)
+                .onClick(onClick));
+        
+    }
+    
+    
+    /**
+     * Adds a marker to the map with the given attributes
+     * @param opts The marker options.
+     * @return marker reference object that should be used when removing the marker
+     */
+    public MapObject addMarker(MarkerOptions opts) {
+        //public MapObject addMarker(EncodedImage icon, Coord location, String text, String longText, final ActionListener onClick) {
+        EncodedImage icon = opts.getIcon();
+        Coord location = opts.getLocation();
+        String text = opts.getText();
+        String longText = opts.getLongText();
+        ActionListener onClick = opts.getOnClick();
         if(internalNative != null) {
             byte[] iconData = null;
             if(icon != null) {
                 iconData = icon.getImageData();
+                internalNative.setMarkerSize(icon.getWidth(), icon.getHeight());
             }
-            long key = internalNative.addMarker(iconData, location.getLatitude(), location.getLongitude(), text, longText, onClick != null);
+            
+            long key = internalNative.addMarker(iconData, location.getLatitude(), location.getLongitude(), text, longText, onClick != null, 
+                    opts.anchorU, 
+                    opts.anchorV
+            );
             MapObject o = new MapObject();
             o.mapKey = key;
             o.callback = onClick;
@@ -517,24 +770,54 @@ public class MapContainer extends Container {
             } else {
                 
                 String uri = null;
+                int iconWidth = 0;
+                int iconHeight = 0;
+                int anchorU = 0;
+                int anchorV = 0;
                 if(icon != null) {
                     uri = WebBrowser.createDataURI(icon.getImageData(), "image/png");
+                    iconWidth = icon.getWidth();
+                    iconHeight = icon.getHeight();
+                    anchorU = (int)(icon.getWidth() * opts.anchorU);
+                    anchorV = (int)(icon.getHeight() * opts.anchorV);
                 } 
-                browserBridge.waitForReady();
-                JSRef res = internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".addMarker(${0}, ${1}, ${2}, ${3}, ${4}));", 
+                //browserBridge.waitForReady();
                 
-                //long key = ((Double)browserBridge.bridge.call("addMarker", new Object[]{
-                    uri,
-                    location.getLatitude(),
-                    location.getLongitude(),
-                    text,
-                    longText
-                //})).intValue();
-                );
                 MapObject o = new MapObject();
-                
-                o.mapKey = res.getInt();
                 o.callback = onClick;
+                o.pending = true;
+                final String fUri = uri;
+                final int fIconWidth = iconWidth;
+                final int fIconHeight = iconHeight;
+                final float fAnchorU = anchorU;
+                final float fAnchorV = anchorV;
+                browserBridge.ready(()->{
+                    internalBrowser.execute(
+                            "callback.onSuccess("+BRIDGE+".addMarker(${0}, ${1}, ${2}, ${3}, ${4}, ${5}, ${6}, ${7}, ${8}))", new Object[]{
+
+                    //long key = ((Double)browserBridge.bridge.call("addMarker", new Object[]{
+                        fUri,
+                        location.getLatitude(),
+                        location.getLongitude(),
+                        text,
+                        longText,
+                        fIconWidth,
+                        fIconHeight, 
+                        fAnchorU,
+                        fAnchorV},
+                            jsres->{
+                                o.mapKey = jsres.getInt();
+                                o.pending = false;
+
+                            }
+                    //})).intValue();
+                    );
+                });
+                
+                //MapObject o = new MapObject();
+                
+                //o.mapKey = res.getInt();
+                //o.callback = onClick;
                 markers.add(o);
                 //System.out.println("MapKey added "+o.mapKey);
                 return o;
@@ -571,7 +854,7 @@ public class MapContainer extends Container {
                 markers.add(o);
                 return o;
             } else {
-                browserBridge.waitForReady();
+                //browserBridge.waitForReady();
                 StringBuilder json = new StringBuilder();
                 json.append("[");
                 boolean first = true;
@@ -585,10 +868,15 @@ public class MapContainer extends Container {
                 }
                 json.append("]");
                 //long key = ((Double)browserBridge.bridge.call("addPathAsJSON", new Object[]{json.toString()})).intValue();
-                JSRef res = internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".addPathAsJSON(${0}));", json.toString());
-                
                 MapObject o = new MapObject();
-                o.mapKey = res.getInt();
+                o.pending = true;
+                browserBridge.ready(()->{
+                    internalBrowser.execute("callback.onSuccess("+BRIDGE+".addPathAsJSON(${0}));", new Object[]{json.toString()}, jsres->{
+                        o.mapKey = jsres.getInt();
+                        o.pending = false;
+                    });
+                });
+                
                 markers.add(o);
                 return o;
             }
@@ -605,9 +893,9 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getMaxZoomLevel();
             } else {
-                browserBridge.waitForReady();
+                return dummyMapComponent.getMaxZoomLevel();
                 //return browserBridge.bridge.callInt("getMaxZoom");
-                return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getMaxZoom())").getInt();
+                //return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getMaxZoom())").getInt();
             }
         }
         return internalNative.getMaxZoom();
@@ -623,8 +911,9 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getMinZoomLevel();
             } else {
-                browserBridge.waitForReady();
-                return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getMinZoom())").getInt();
+                //browserBridge.waitForReady();
+                return dummyMapComponent.getMinZoomLevel();
+                //return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getMinZoom())").getInt();
             }
         }
         return internalNative.getMinZoom();
@@ -635,6 +924,10 @@ public class MapContainer extends Container {
      * @param obj the map object to remove
      */
     public void removeMapObject(MapObject obj) {
+        if (obj.componentMarker != null) {
+            removeMarker(obj.componentMarker);
+            return;
+        }
         markers.remove(obj);
         if(internalNative != null) {
             internalNative.removeMapElement(obj.mapKey);
@@ -643,9 +936,20 @@ public class MapContainer extends Container {
                 if(internalLightweightCmp != null) {
                     internalLightweightCmp.removeLayer(obj.lines);
                 } else {
-                    browserBridge.waitForReady();
+                    //browserBridge.waitForReady();
                     //browserBridge.bridge.call("removeMapElement", new Object[]{obj.mapKey});
-                    internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".removeMapElement(${0}))", obj.mapKey);
+                    if (obj.pending) {
+                        Display.getInstance().callSeriallyOnIdle(()->{
+                            removeMapObject(obj);
+                        });
+                        return;
+                    }
+                    browserBridge.ready(()->{
+                        internalBrowser.execute("callback.onSuccess("+BRIDGE+".removeMapElement(${0}))", new Object[]{obj.mapKey}, jsres->{
+                            // do nothing here.
+                        });
+                    });
+                    
                     
                 }
             } else {
@@ -654,9 +958,21 @@ public class MapContainer extends Container {
                         points.removePoint(obj.point);
                     }
                 } else {
-                    browserBridge.waitForReady();
+                    //browserBridge.waitForReady();
                    // browserBridge.bridge.call("removeMapElement", new Object[]{obj.mapKey});
-                    internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".removeMapElement(${0}))", obj.mapKey);
+                    if (obj.pending) {
+                       Display.getInstance().callSeriallyOnIdle(()->{
+                            removeMapObject(obj);
+                        });
+                        return;
+                    }
+                    browserBridge.ready(()->{
+                        internalBrowser.execute("callback.onSuccess("+BRIDGE+".removeMapElement(${0}))", new Object[]{obj.mapKey}, jsres->{
+                            // Do nothing
+
+                        });
+                    });
+                    
                     
                 }
                 
@@ -669,6 +985,7 @@ public class MapContainer extends Container {
      * Removes all the layers from the map
      */
     public void clearMapLayers() {
+        mapLayoutWrapper.removeAll();
         if(internalNative != null) {
             internalNative.removeAllMarkers();
             markers.clear();
@@ -677,9 +994,12 @@ public class MapContainer extends Container {
                 internalLightweightCmp.removeAllLayers();
                 points = null;
             } else {
-                browserBridge.waitForReady();
+                //browserBridge.waitForReady();
                 //browserBridge.bridge.call("removeAllMarkers");
-                internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".removeAllMarkers())");
+                browserBridge.ready(()->{
+                    internalBrowser.execute("callback.onSuccess("+BRIDGE+".removeAllMarkers())", jsres->{});
+                });
+                
                 markers.clear();
             }
         }
@@ -697,9 +1017,13 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 internalLightweightCmp.zoomTo(crd, (int)zoom);
             } else {
-                browserBridge.waitForReady();
+                //browserBridge.waitForReady();
                 //browserBridge.bridge.call("zoom", new Object[]{ crd.getLatitude(), crd.getLongitude(), zoom});
-                internalBrowser.execute(BRIDGE+".zoom(${0}, ${1}, ${2})", new Object[]{ crd.getLatitude(), crd.getLongitude(), zoom});
+                dummyMapComponent.zoomTo(crd, zoom);
+                browserBridge.ready(()->{
+                    internalBrowser.execute(BRIDGE+".zoom(${0}, ${1}, ${2})", new Object[]{ crd.getLatitude(), crd.getLongitude(), zoom});
+                });
+                
                 
             }
         }
@@ -809,9 +1133,10 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getZoomLevel();
             }
-            browserBridge.waitForReady();
+            //browserBridge.waitForReady();
             //return browserBridge.bridge.callInt("getZoom");
-            return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getZoom())").getInt();
+            return dummyMapComponent.getZoomLevel();
+            //return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getZoom())").getInt();
             
         }        
     }
@@ -822,6 +1147,8 @@ public class MapContainer extends Container {
         return new BoundingBox(sw, ne);
         
     }
+    
+    private int dummyType = MAP_TYPE_NONE;
     
     /**
      * Sets the native map type to one of the MAP_TYPE constants
@@ -835,9 +1162,13 @@ public class MapContainer extends Container {
                 
             } else {
                 // browser component
-                browserBridge.waitForReady();
+                //browserBridge.waitForReady();
                 //browserBridge.bridge.call("setMapType", new Object[]{type});
-                internalBrowser.execute(BRIDGE+".setMapType(${0})", new Object[]{type});
+                dummyType = type;
+                browserBridge.ready(()->{
+                    internalBrowser.execute(BRIDGE+".setMapType(${0})", new Object[]{type}, jsres->{});
+                });
+                
             }
         }
     }
@@ -850,9 +1181,10 @@ public class MapContainer extends Container {
         if(internalNative != null) {
             return internalNative.getMapType();
         } else if (browserBridge != null) {
-            browserBridge.waitForReady();
+            //browserBridge.waitForReady();
             //return browserBridge.bridge.callInt("getMapType");
-            return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getMapType())").getInt();
+            return dummyType;
+            //return internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getMapType())").getInt();
         }       
         return MAP_TYPE_NONE;
     }
@@ -868,12 +1200,16 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 internalLightweightCmp.zoomTo(crd, internalLightweightCmp.getZoomLevel());
             } else {
-                browserBridge.waitForReady();
+                //browserBridge.waitForReady();
                 //browserBridge.bridge.call(
                 //        "setCameraPosition", 
                 //        new Object[]{crd.getLatitude(), crd.getLongitude()}
                 //);
-                internalBrowser.execute(BRIDGE+".setCameraPosition(${0}, ${1})", new Object[]{crd.getLatitude(), crd.getLongitude()});
+                dummyMapComponent.zoomTo(crd, (int)getZoom());
+                browserBridge.ready(()->{
+                    internalBrowser.execute(BRIDGE+".setCameraPosition(${0}, ${1})", new Object[]{crd.getLatitude(), crd.getLongitude()});
+                });
+                
                   
             }
             return;
@@ -890,8 +1226,10 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getCenter();
             } else {
-                browserBridge.waitForReady();
+                //browserBridge.waitForReady();
                 //String pos = browserBridge.bridge.callString("getCameraPosition");
+                return dummyMapComponent.getCenter();
+                /*
                 String pos = internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getCameraPosition())").toString();
                 try {
                     String latStr = pos.substring(0, pos.indexOf(" "));
@@ -901,6 +1239,7 @@ public class MapContainer extends Container {
                     ex.printStackTrace();
                     return new Coord(0, 0);
                 }
+                */
                 
             }
 
@@ -919,7 +1258,8 @@ public class MapContainer extends Container {
             if(internalLightweightCmp != null) {
                 return internalLightweightCmp.getCoordFromPosition(x + getAbsoluteX(), y + getAbsoluteY());
             }
-            browserBridge.waitForReady();
+            return dummyMapComponent.getCoordFromPosition(x + getAbsoluteX(), y + getAbsoluteY());
+            //browserBridge.waitForReady();
             //x -= internalBrowser.getAbsoluteX();
             //y -= internalBrowser.getAbsoluteY();
             //System.out.println("Browser bridge pointer here is "+browserBridge.bridge.toJSPointer());
@@ -928,6 +1268,7 @@ public class MapContainer extends Container {
             //    int i = 0;
             //}
             //String coord = (String)browserBridge.bridge.call("getCoordAtPosition", new Object[]{x, y});
+            /*
             String coord = internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getCoordAtPosition(${0}, ${1}))", x, y).toString();
             try {
                 String xStr = coord.substring(0, coord.indexOf(" "));
@@ -937,6 +1278,7 @@ public class MapContainer extends Container {
                 ex.printStackTrace();
             }
             return new Coord(0, 0);
+            */
         }
         internalNative.calcLatLongPosition(x, y);
         return new Coord(internalNative.getScreenLat(), internalNative.getScreenLon());
@@ -956,8 +1298,13 @@ public class MapContainer extends Container {
                 p.setY(p.getY());
                 return p;
             }
-            browserBridge.waitForReady();
+            Point p =  dummyMapComponent.getPointFromCoord(new Coord(lat, lon));
+            p.setX(p.getX());
+            p.setY(p.getY());
+            return p;
+            //browserBridge.waitForReady();
             //String coord = (String)browserBridge.bridge.call("getScreenCoord", new Object[]{lat, lon});
+            /*
             String coord = (String)internalBrowser.executeAndWait("callback.onSuccess("+BRIDGE+".getScreenCoord(${0}, ${1}))", new Object[]{lat, lon}).toString();
             try {
                 String xStr = coord.substring(0, coord.indexOf(" "));
@@ -974,9 +1321,10 @@ public class MapContainer extends Container {
             }
             
             return new Point(0, 0);
+            */
         }
         internalNative.calcScreenPosition(lat, lon);
-        return new Point(internalNative.getScreenX(), internalNative.getScreenY());
+        return new Point(internalNative.getScreenX() + getStyle().getPaddingLeft(false), internalNative.getScreenY() + getStyle().getPaddingTop());
     }
     
     /**
@@ -1125,6 +1473,9 @@ public class MapContainer extends Container {
     
     void fireMapListenerEvent(int zoom, double lat, double lon) {
         // assuming always EDT
+        if (dummyMapComponent != null) {
+            dummyMapComponent.zoomTo(new Coord(lat, lon), zoom);
+        }
         if(listeners != null) {
             Coord c = new Coord(lat, lon);
             for(MapListener l : listeners) {
@@ -1209,5 +1560,7 @@ public class MapContainer extends Container {
         ActionListener callback;
         PointLayer point;
         LinesLayer lines;
+        Component componentMarker; // Used only for Components added as markers
+        boolean pending;
     }
 }

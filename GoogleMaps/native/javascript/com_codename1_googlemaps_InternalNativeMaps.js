@@ -102,6 +102,12 @@ var o = {};
                 delete this.paths[param1];
                 line.setMap(null);
             }
+            this.markerLookup = this.markerLookup || {};
+            var marker = this.markerLookup[param1];
+            if (marker) {
+                delete this.markerLookup[param1];
+                marker.setMap(null);
+            }
             callback.complete();
         });
     };
@@ -247,6 +253,7 @@ var o = {};
             });
 
             var fireMapChangeEvent = self.$GLOBAL$.com_codename1_googlemaps_MapContainer.fireMapChangeEvent__int_int_double_double$async;
+            var pendingBoundsEvent = null;
             google.maps.event.addListener(self.map, 'bounds_changed', function() {
                 if (!self.initialized) {
                     callback.complete(self.el);
@@ -260,10 +267,27 @@ var o = {};
                         }, 500);
                     });
                 }
-                fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
+                if (pendingBoundsEvent === null) {
+                    setTimeout(function() {
+                        var evt = pendingBoundsEvent;
+                        pendingBoundsEvent = null;
+                        fireMapChangeEvent(self.mapId, evt.zoom, evt.lat, evt.lng);
+                    }, 100);
+                }
+                pendingBoundsEvent = {zoom: self.map.getZoom(), lat: self.map.getCenter().lat(), lng: self.map.getCenter().lng()};
+                
             });
+            var pendingCenterEvent = null;
+            
             google.maps.event.addListener(self.map, 'center_changed', function() {
-                fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
+                if (pendingCenterEvent === null) {
+                    setTimeout(function() {
+                        var evt = pendingCenterEvent;
+                        pendingCenterEvent = null;
+                        fireMapChangeEvent(self.mapId, evt.zoom, evt.lat, evt.lng);
+                    }, 100);
+                }
+                pendingCenterEvent = {zoom: self.map.getZoom(), lat: self.map.getCenter().lat(), lng: self.map.getCenter().lng()};
             });
             google.maps.event.addListener(self.map, 'zoom_changed', function() {
                 fireMapChangeEvent(self.mapId, self.map.getZoom(), self.map.getCenter().lat(), self.map.getCenter().lng());
@@ -289,14 +313,31 @@ var o = {};
         
     };
 
-    o.addMarker__byte_1ARRAY_double_double_java_lang_String_java_lang_String_boolean = function(param1, lat, lon, text, snippet, cb, callback) {
+    o.setMarkerSize__int_int = function(w, h, callback) {
+        this.markerWidth = w;
+        this.markerHeight = h;
+        callback.complete(null);
+    };
+
+    o.addMarker__byte_1ARRAY_double_double_java_lang_String_java_lang_String_boolean_float_float = function(param1, lat, lon, text, snippet, cb, anchorU, anchorV, callback) {
         ready(this, function() {
             triggerResize(this);
             var self = this;
             var uint8 = param1 !== null ? new Uint8Array(param1) : null;
             var url = uint8 !== null ? ('data:image/png;base64,' + window.arrayBufferToBase64(uint8.buffer)) : null;
+            
+            var icon = url == null ? url : new google.maps.MarkerImage(
+                                // URL
+                                url,
+                                // (width,height)
+                                new google.maps.Size(self.markerWidth, self.markerHeight),
+                                // The origin point (x,y)
+                                new google.maps.Point(0, 0),
+                                // The anchor point (x,y)
+                                new google.maps.Point(anchorU * self.markerWidth, anchorV * self.markerHeight)
+                            );
             var markerOpts = {
-                icon : url,
+                icon : icon,
                 map : this.map,
                 position : new google.maps.LatLng(lat, lon),
                 title : text

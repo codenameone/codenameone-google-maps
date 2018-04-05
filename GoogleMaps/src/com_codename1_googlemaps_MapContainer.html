@@ -3,9 +3,9 @@
   <head>
       <title>Map Container</title>
       <script>
-          //if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}
+        //if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}
     </script>
-                  
+              
     <style type="text/css">
         #map {
             height: 100%;
@@ -23,7 +23,7 @@
     </style>
   </head>
   <body>
-    <div id="map"></div>
+      <div id="map"></div>
     <script>
         (function() {
             var uniqueIdCounter = 0;
@@ -126,11 +126,26 @@
                         this.lastPoint = new google.maps.Point((this.lastPoint.x-bottomLeft.x)*scale,(this.lastPoint.y-topRight.y)*scale); 
                     });
                 },
-                addMarker : function(imageIcon, lat, lon, text, longText){
+                addMarker : function(imageIcon, lat, lon, text, longText, imageWidth, imageHeight, anchorU, anchorV){
                     var key = 0;
                     this.ready(function() {
                         var google = window.google;
                         var self = this;
+                        
+                       
+                        
+                        if (imageIcon !== null) {
+                            imageIcon = new google.maps.MarkerImage(
+                                // URL
+                                imageIcon,
+                                // (width,height)
+                                new google.maps.Size(imageWidth, imageHeight),
+                                // The origin point (x,y)
+                                new google.maps.Point(0, 0),
+                                // The anchor point (x,y)
+                                new google.maps.Point(anchorU, anchorV)
+                            );
+                        }
                         var markerOpts = {
                             icon : imageIcon,
                             map : this.map,
@@ -335,8 +350,24 @@
             window.here = 2;
         })();
             
-      
       function initMap() {
+          setTimeout(function(){
+            try {
+              initMap0();
+            } catch (e) {
+                if (window.jconsole) {
+                    window.jconsole.log("Found exception "+e);
+                } else {
+                    var queue = window.queue || [];
+                    queue.push("Found exception "+e);
+                    window.queue = queue;
+                }
+            }
+          }, 500);
+          
+      }
+      
+      function initMap0() {
         var bridge = window.com_codename1_googlemaps_MapContainer_bridge;
         
         var google = window.google;
@@ -386,7 +417,7 @@
                     if (evt) {
                         getMapContainer().fireMapChangeEvent(evt.zoom, evt.lat, evt.lon);
                     }
-                }, 0);
+                }, 20);
             }*/
             pendingMapChangeEvent = {
                 zoom:zoom,
@@ -481,10 +512,12 @@
         //    fireMapChangeEvent(map.getZoom(), map.getCenter().lat(), map.getCenter().lng());
         //});
         
+        
       }
 
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"
-    async defer></script>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"  async defer></script>
+    
   </body>
 </html>

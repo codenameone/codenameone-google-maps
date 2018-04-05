@@ -264,12 +264,13 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         } 
     }
     
-    public long addMarker(final byte[] icon, final double lat, final double lon, final String text, final String snippet, final boolean callback) {
+    public long addMarker(final byte[] icon, final double lat, final double lon, final String text, final String snippet, final boolean callback, final float anchorU, final float anchorV) {
         uniqueIdCounter++;
         final long key = uniqueIdCounter;
         AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 MarkerOptions mo = new MarkerOptions();
+                mo.anchor(anchorU, anchorV);
                 if(text != null) {
                     mo.title(text);
                 }
@@ -383,6 +384,10 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             }
         });
         return result[0];
+    }
+    
+    public void setMarkerSize(int width, int height) {
+        // not needed right now... used only by Javascript port
     }
 
     public double getLongitude() {

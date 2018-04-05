@@ -22,8 +22,8 @@
         code size and wider device support</echo>
         <mkdir dir="build/tmp"/>
         <javac destdir="build/tmp"
-            source="1.5"
-            target="1.5"
+            source="1.8"
+            target="1.8"
             bootclasspath="lib/CLDC11.jar"
             classpath="${javac.classpath}:${build.classes.dir}">
             <src path="${src.dir}"/>
@@ -32,8 +32,8 @@
 
       
     <target name="-pre-init">
-        <property name="javac.source" value="1.5" />
-        <property name="javac.target" value="1.5" />
+        <property name="javac.source" value="1.8" />
+        <property name="javac.target" value="1.8" />
     </target>
 
     <target name="run">
@@ -75,6 +75,9 @@
         <mkdir dir="dist" />
         <zip basedir="build/lib" compress="true" destfile="dist/${application.title}.cn1lib" />
         <copy file="dist/GoogleMaps.cn1lib" todir="../GoogleMapsTest/lib/" />
+        <ant dir="../GoogleMapsTest" target="refresh-libs"/>
+        <copy file="dist/GoogleMaps.cn1lib" todir="/Users/shannah/cn1_files/tests/AppleMapsTest1213/lib/" />
+        <ant dir="/Users/shannah/cn1_files/tests/AppleMapsTest1213" target="refresh-libs" usenativebasedir="true"/>
     </target>
 
     <target name="buildNativeRIM">

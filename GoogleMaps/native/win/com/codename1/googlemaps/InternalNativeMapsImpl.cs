@@ -183,8 +183,12 @@ namespace com.codename1.googlemaps{
     public void setShowMyLocation(bool param) {
     }
 
-    public long addMarker(byte[] param, double param1, double param2, string param3, string param4, bool param5) {
+    public long addMarker(byte[] param, double param1, double param2, string param3, string param4, bool param5, float param6, float param7) {
         return 0;
+    }
+
+    public void setMarkerSize(int w, int h) {
+
     }
 
     public bool isSupported() {

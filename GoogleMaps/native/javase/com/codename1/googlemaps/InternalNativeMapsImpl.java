@@ -45,7 +45,7 @@ public class InternalNativeMapsImpl implements com.codename1.googlemaps.Internal
     public void addToPath(long param, double param1, double param2) {
     }
 
-    public long addMarker(byte[] param, double param1, double param2, String param3, String param4, boolean param5) {
+    public long addMarker(byte[] param, double param1, double param2, String param3, String param4, boolean param5, float param6, float param7) {
         return 0;
     }
 
@@ -76,6 +76,10 @@ public class InternalNativeMapsImpl implements com.codename1.googlemaps.Internal
     }
 
     public void setZoom(double param, double param1, float param2) {
+    }
+    
+    public void setMarkerSize(int w, int h) {
+        
     }
 
     public void deinitialize() {
