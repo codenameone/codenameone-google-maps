@@ -66,12 +66,12 @@ extern float scaleValue;
 
 - (void) mapView:(GMSMapView *)mapView didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
     CGPoint pp = [mapView.projection pointForCoordinate:coordinate];
-    com_codename1_googlemaps_MapContainer_fireTapEventStatic___int_int_int(CN1_THREAD_GET_STATE_PASS_ARG mapId, pp.x, pp.y);
+    com_codename1_googlemaps_MapContainer_fireTapEventStatic___int_int_int(CN1_THREAD_GET_STATE_PASS_ARG mapId, pp.x * scaleValue, pp.y * scaleValue);
 }
 
 - (void) mapView:(GMSMapView *)mapView didLongPressAtCoordinate:(CLLocationCoordinate2D)coordinate {
     CGPoint pp = [mapView.projection pointForCoordinate:coordinate];
-    com_codename1_googlemaps_MapContainer_fireLongPressEventStatic___int_int_int(CN1_THREAD_GET_STATE_PASS_ARG mapId, pp.x, pp.y);
+    com_codename1_googlemaps_MapContainer_fireLongPressEventStatic___int_int_int(CN1_THREAD_GET_STATE_PASS_ARG mapId, pp.x * scaleValue, pp.y * scaleValue);
 }
 -(void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position {
     com_codename1_googlemaps_MapContainer_fireMapChangeEvent___int_int_double_double(CN1_THREAD_GET_STATE_PASS_ARG mapId, (int)mapView.camera.zoom, mapView.camera.target.latitude, mapView.camera.target.longitude);
