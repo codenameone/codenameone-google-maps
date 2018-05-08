@@ -122,11 +122,14 @@ public class MapLayout extends Layout implements MapListener {
         public void addLayoutComponent(Object value, Component comp, Container c) {
             //super.addLayoutComponent(value, comp, c);
             comp.putClientProperty(COORD_KEY, (Coord) value);
+            comp.putClientProperty(POINT_KEY, null);
         }
 
         @Override
         public void removeLayoutComponent(Component comp) {
             uninstallMarker(comp);
+            comp.putClientProperty(COORD_KEY, null);
+            comp.putClientProperty(POINT_KEY, null);
             super.removeLayoutComponent(comp); //To change body of generated methods, choose Tools | Templates.
         }
 

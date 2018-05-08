@@ -136,13 +136,16 @@ extern float scaleValue;
 -(void)removeMapElement:(long long)param{
     NSObject* n = (NSObject*)param;
     if([n isKindOfClass:[GMSMarker class]]) {
-        GMSMarker* marker = (GMSMarker*)n;
-        marker.map = nil;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            GMSMarker* marker = (GMSMarker*)n;
+            marker.map = nil;
+        });
         return;
     }
-    
-    GMSPolyline *polyline = (GMSPolyline *)param;
-    polyline.map = nil;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        GMSPolyline *polyline = (GMSPolyline *)param;
+        polyline.map = nil;
+    });
 }
 
 -(double)getLatitude{
