@@ -435,7 +435,6 @@ public class MapContainer extends Container {
                             fireMarkerEvent(value.getInt());
                         }
                     });
-                    
                     internalBrowser.execute("callback.onSuccess(com_codename1_googlemaps_MapContainer_bridge)", new SuccessCallback<BrowserComponent.JSRef>() {
 
                         public void onSucess(BrowserComponent.JSRef value) {
@@ -444,10 +443,12 @@ public class MapContainer extends Container {
 
                                     public void onSucess(BrowserComponent.JSRef value) {
                                         browserBridge.ready = true;
+                                        browserBridge.ready(null);
                                     }
                                 });
                             } else {
                                 browserBridge.ready = true;
+                                browserBridge.ready(null);
                             }
                         }
                     });
