@@ -153,8 +153,9 @@
                         this.lastPoint = new google.maps.Point((this.lastPoint.x-bottomLeft.x)*scale,(this.lastPoint.y-topRight.y)*scale); 
                     });
                 },
-                addMarker : function(imageIcon, lat, lon, text, longText, imageWidth, imageHeight, anchorU, anchorV){
-                    var key = 0;
+                addMarker : function(imageIcon, lat, lon, text, longText, imageWidth, imageHeight, anchorU, anchorV, callback){
+                    
+                    var key = uniqueIdCounter++;
                     this.ready(function() {
                         var google = window.google;
                         var self = this;
@@ -180,7 +181,7 @@
                             title : text
                         };
 
-                        key = uniqueIdCounter++;
+                        //key = uniqueIdCounter++;
                         //console.log("Setting key to "+key);
                         this.markerLookup = this.markerLookup || {};
 
@@ -192,6 +193,9 @@
 
                         this.markerLookup[key] = marker;
                         //console.log(this.markerLookup);
+                        if (callback) {
+                            callback(key);
+                        }
                         
                     });
                     //console.log("Returning key "+key);
@@ -245,8 +249,9 @@
                 
                 addPathAsJSON: function(coordsJSON){
                     var out = 0;
+                    var id = uniqueIdCounter++;
                     this.ready(function() {
-                        var id = uniqueIdCounter++;
+                        
                         this.paths = this.paths || {};
 
                         //callback.complete(id);
