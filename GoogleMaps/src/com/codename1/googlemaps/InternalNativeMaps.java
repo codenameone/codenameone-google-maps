@@ -58,4 +58,9 @@ public interface InternalNativeMaps extends NativeInterface {
     
     public void setShowMyLocation(boolean show);
     public void setRotateGestureEnabled(boolean e);
+    
+    public void setPathStrokeColor(int color);
+    public int getPathStrokeColor();
+    public void setPathStrokeWidth(int width);
+    public int getPathStrokeWidth();
 }

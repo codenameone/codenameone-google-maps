@@ -105,6 +105,8 @@ public class MapContainer extends Container {
     
     private EventDispatcher tapListener;
     private EventDispatcher longPressListener;
+    private int pathStrokeColor=0;
+    private int pathStrokeWidth=1;
     
     private static final String BRIDGE="com_codename1_googlemaps_MapContainer_bridge";
     
@@ -113,6 +115,38 @@ public class MapContainer extends Container {
      */
     public MapContainer() {
         this(new OpenStreetMapProvider());
+    }
+    
+    /**
+     * Sets the color used to stroke paths on the map.
+     * @param color The color
+     */
+    public void setPathStrokeColor(int color) {
+        this.pathStrokeColor = color;
+    }
+    
+    /**
+     * Gets the color used to stroke paths on the map.
+     * @return The color
+     */
+    public int getPathStrokeColor() {
+        return this.pathStrokeColor;
+    }
+    
+    /**
+     * Sets the pixel width used to stroke paths on the map.
+     * @param width The pixel width.
+     */
+    public void setPathStrokeWidth(int width) {
+        this.pathStrokeWidth = width;
+    }
+    
+    /**
+     * Gets the pixel width used to stroke paths on the map.
+     * @return The pixel width.
+     */
+    public int getPathStrokeWidth() {
+        return pathStrokeWidth;
     }
     
     /**
@@ -835,6 +869,9 @@ public class MapContainer extends Container {
      */
     public MapObject addPath(Coord... path) {
         if(internalNative != null) {
+            internalNative.setPathStrokeColor(pathStrokeColor);
+            internalNative.setPathStrokeWidth(pathStrokeWidth);
+            
             long key = internalNative.beginPath();
             for(Coord c : path) {
                 internalNative.addToPath(key, c.getLatitude(), c.getLongitude());
@@ -847,6 +884,7 @@ public class MapContainer extends Container {
         } else {
             if(internalLightweightCmp != null) {
                 LinesLayer ll = new LinesLayer();
+                ll.lineColor(pathStrokeColor);
                 ll.addLineSegment(path);
 
                 internalLightweightCmp.addLayer(ll);
@@ -857,14 +895,9 @@ public class MapContainer extends Container {
             } else {
                 //browserBridge.waitForReady();
                 StringBuilder json = new StringBuilder();
-                json.append("[");
-                boolean first = true;
+                json.append("[{\"pathStrokeColor\":").append(pathStrokeColor).append(", \"pathStrokeWidth\":").append(pathStrokeWidth).append("}");
                 for(Coord c : path) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        json.append(", ");
-                    }
+                    json.append(", ");
                     json.append("{\"lat\":").append(c.getLatitude()).append(", \"lon\": ").append(c.getLongitude()).append("}");
                 }
                 json.append("]");

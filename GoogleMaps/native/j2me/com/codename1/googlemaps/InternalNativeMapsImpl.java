@@ -112,4 +112,17 @@ public class InternalNativeMapsImpl {
 
     public void setRotateGestureEnabled(boolean e) {
     }
+    
+    public void setPathStrokeColor(int color) {
+        
+    }
+    public int getPathStrokeColor() {
+        return 0;
+    }
+    public void setPathStrokeWidth(int width) {
+        
+    }
+    public int getPathStrokeWidth() {
+        return 1;
+    }
 }

@@ -96,5 +96,18 @@ public class InternalNativeMapsImpl {
     public boolean isSupported() {
         return false;
     }
+    
+    public void setPathStrokeColor(int color) {
+        
+    }
+    public int getPathStrokeColor() {
+        return 0;
+    }
+    public void setPathStrokeWidth(int width) {
+        
+    }
+    public int getPathStrokeWidth() {
+        return 1;
+    }
 
 }

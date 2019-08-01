@@ -195,5 +195,18 @@ namespace com.codename1.googlemaps{
         return com.codename1.ui.Display.getInstance().getProperty(TOKEN_KEY, null) != null ;
     }
 
+    public void setPathStrokeColor(int color) {
+        
+    }
+    public int getPathStrokeColor() {
+        return 0;
+    }
+    public void setPathStrokeWidth(int width) {
+        
+    }
+    public int getPathStrokeWidth() {
+        return 1;
+    }
+
 }
 }

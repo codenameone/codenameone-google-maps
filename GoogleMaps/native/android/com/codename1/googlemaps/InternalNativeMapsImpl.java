@@ -66,6 +66,8 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     private Point lastPoint;
     private boolean showMyLocation;
     private boolean rotateGestureEnabled;
+    private int pathStrokeColor=0;
+    private int pathStrokeWidth=1;
 
     static {
         if(AndroidNativeUtil.getActivity() != null) {
@@ -296,7 +298,10 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     }
 
     public long beginPath() {
-        currentPath = new PolylineOptions();
+        currentPath = new PolylineOptions()
+                .color(0xFF000000 | pathStrokeColor)
+                .width(pathStrokeWidth);
+        
         return 1;
     }
 
@@ -593,10 +598,12 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     public long finishPath(long param) {
         uniqueIdCounter++;
         final long key = uniqueIdCounter;
+        final PolylineOptions fCurrentPath = currentPath;
         AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                paths.put(key, mapInstance.addPolyline(currentPath));
+                paths.put(key, mapInstance.addPolyline(fCurrentPath));
+
                 //PeerImage.submitUpdate(view, view.getWidth(), view.getHeight());
             }
         });
@@ -776,4 +783,38 @@ public class InternalNativeMapsImpl implements LifecycleListener {
             }
         });
     }
+    
+    
+     /**
+     * Sets the color used to stroke paths on the map.
+     * @param color The color
+     */
+    public void setPathStrokeColor(int color) {
+        this.pathStrokeColor = color;
+    }
+    
+    /**
+     * Gets the color used to stroke paths on the map.
+     * @return The color
+     */
+    public int getPathStrokeColor() {
+        return this.pathStrokeColor;
+    }
+    
+    /**
+     * Sets the pixel width used to stroke paths on the map.
+     * @param width The pixel width.
+     */
+    public void setPathStrokeWidth(int width) {
+        this.pathStrokeWidth = width;
+    }
+    
+    /**
+     * Gets the pixel width used to stroke paths on the map.
+     * @return The pixel width.
+     */
+    public int getPathStrokeWidth() {
+        return pathStrokeWidth;
+    }
+    
 }

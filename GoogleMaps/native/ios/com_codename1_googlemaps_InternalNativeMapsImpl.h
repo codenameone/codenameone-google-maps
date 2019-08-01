@@ -24,6 +24,8 @@ GMSMapView *mapView;
     CLLocationCoordinate2D currentCoordinate;
     BOOL showMyLocation;
     BOOL rotateGesture;
+    int pathStrokeWidth;
+    int pathStrokeColor;
 }
 
 -(long long)addMarker:(NSData*)param param1:(double)param1 param2:(double)param2 param3:(NSString*)param3 param4:(NSString*)param4 param5:(BOOL)param5 param6:(float)param6 param7:(float)param7;
@@ -55,5 +57,23 @@ GMSMapView *mapView;
 -(double) getScreenLon;
 -(void)setShowMyLocation:(BOOL)param;
 -(void)setRotateGestureEnabled:(BOOL)param;
+/*
+ public void setPathStrokeColor(int color) {
+        
+    }
+    public int getPathStrokeColor() {
+        return 0;
+    }
+    public void setPathStrokeWidth(int width) {
+        
+    }
+    public int getPathStrokeWidth() {
+        return 1;
+    }
+ */
+-(void)setPathStrokeColor:(int)param;
+-(int)getPathStrokeColor;
+-(void)setPathStrokeWidth:(int)param;
+-(int)getPathStrokeWidth;
 
 @end

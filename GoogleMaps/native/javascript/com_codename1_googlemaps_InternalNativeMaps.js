@@ -34,6 +34,14 @@
         
     }
     
+    var rgbToHex = function (rgb) { 
+        var hex = Number(rgb).toString(16);
+        while (hex.length < 6) {
+             hex = "0" + hex;
+        }
+        return '#'+hex;
+    };
+    
     function fromLatLngToPoint(latLng, map) {
         var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
         var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
@@ -68,6 +76,8 @@
 var o = {};
 
     o.initialize_ = function(callback) {
+        this.pathStrokeColor = 0;
+        this.pathStrokeWidth = 1;
         ready(this, function() {
             window.theMapEl = this.el;
             callback.complete();
@@ -408,7 +418,7 @@ var o = {};
 
     o.beginPath_ = function(callback) {
         ready(this, function() {
-            this.currentPath = {path : []};//new google.maps.PolylineOptions();
+            this.currentPath = {path : [], strokeColor:rgbToHex(this.pathStrokeColor), strokeWeight: this.pathStrokeWidth};//new google.maps.PolylineOptions();
             callback.complete(1);
         });
     };
@@ -431,6 +441,32 @@ var o = {};
             }
             callback.complete();
         });
+    };
+
+    /*
+     * -(void)setPathStrokeColor:(int)param;
+-(int)getPathStrokeColor;
+-(void)setPathStrokeWidth:(int)param;
+-(int)getPathStrokeWidth;
+     */
+
+    o.setPathStrokeColor__int = function(param, callback) {
+        this.pathStrokeColor = param;
+        callback.complete();
+    };
+    
+    o.getPathStrokeColor_ = function(callback) {
+        
+        callback.complete(this.pathStrokeColor);
+    };
+    
+    o.setPathStrokeWidth__int = function(param, callback) {
+        this.pathStrokeWidth = param;
+        callback.complete();
+    };
+    
+    o.getPathStrokeWidth_ = function(callback) {
+        callback.complete(this.pathStrokeWidth);
     };
 
     o.getZoom_ = function(callback) {

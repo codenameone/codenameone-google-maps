@@ -237,9 +237,13 @@ extern float scaleValue;
 
 -(long long)finishPath:(long long)param{
     __block GMSPolyline *polyline = nil;
+    int color = pathStrokeColor;
+    int width = pathStrokeWidth;
     dispatch_async(dispatch_get_main_queue(), ^{
         GMSMutablePath *path = (GMSMutablePath*)param;
         polyline = [GMSPolyline polylineWithPath:path];
+        polyline.strokeColor = UIColorFromRGB(color, 255);
+        polyline.strokeWidth = width;
         polyline.map = mapView;
     });
     return polyline;
@@ -283,5 +287,21 @@ extern float scaleValue;
 }
 
 -(void)deinitialize {}
--(void)initialize {}
+-(void)initialize {
+    pathStrokeColor = 0;
+    pathStrokeWidth = 1;
+}
+
+-(void)setPathStrokeColor:(int)param {
+    pathStrokeColor = param;
+}
+-(int)getPathStrokeColor {
+    return pathStrokeColor;
+}
+-(void)setPathStrokeWidth:(int)param {
+    pathStrokeWidth = param;
+}
+-(int)getPathStrokeWidth {
+    return pathStrokeWidth;
+}
 @end

@@ -3,6 +3,45 @@
   <head>
       <title>Map Container</title>
       <script>
+        var jconsoleAttempts = 0;
+        function myLog(e) {
+            if (window.jconsole) {
+                if (window.queue) {
+                    while (window.queue.length > 0) {
+                        window.jconsole.log(window.queue.shift());
+                    }
+                }
+                if (e !== null) {
+                    window.jconsole.log(e);
+                }
+            } else {
+                jconsoleAttempts++;
+                if (jconsoleAttempts > 50) {
+                    window.jconsole = {
+                        log : function(str) {
+                            console.log(str);
+                        }
+                    };
+                }
+                if (!window.queue) {
+                    window.queue = [];
+                }
+                if (e !== null) {
+                    window.queue.push(e);
+                }
+                setTimeout(function(){myLog(null)}, 200);
+            }
+        }
+        
+        var rgbToHex = function (rgb) { 
+          var hex = Number(rgb).toString(16);
+          while (hex.length < 6) {
+               hex = "0" + hex;
+          }
+          return '#'+hex;
+        };
+        myLog("Here I am !!!");
+          
         //if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}
         
         // JDK 1.8u144 doesn't have requestAnimationFrame, and GoogleMaps requires it
@@ -248,23 +287,35 @@
                 fireMarkerEvent: function(key){},
                 
                 addPathAsJSON: function(coordsJSON){
+                    myLog("Adding path as json with: "+coordsJSON);
                     var out = 0;
                     var id = uniqueIdCounter++;
                     this.ready(function() {
-                        
+                        myLog("Inside ready now");
                         this.paths = this.paths || {};
 
                         //callback.complete(id);
 
                         var coords = JSON.parse(coordsJSON);
                         var path = [];
+                        var pathOpts = null;
                         coords.forEach(function(coord) {
-                            path.push(new google.maps.LatLng(coord.lat, coord.lon));
+                            if (pathOpts === null) {
+                                // The first item in the list is always
+                                // the path options.  {pathStrokeColor: <int>, pathStrokeWidth: <int>}
+                                pathOpts = coord;
+                            } else {
+                                path.push(new google.maps.LatLng(coord.lat, coord.lon));
+                            }
                         });
-
-                        this.paths[id] = new google.maps.Polyline({path: path});
-                        this.paths[id].setMap(this.map);
-                        out = id;
+                        try {
+                            myLog("Stroke color is: "+rgbToHex(pathOpts.pathStrokeColor));
+                            this.paths[id] = new google.maps.Polyline({path: path, strokeColor:rgbToHex(pathOpts.pathStrokeColor), strokeWeight: pathOpts.pathStrokeWidth});
+                            this.paths[id].setMap(this.map);
+                            out = id;
+                        } catch (ex) {
+                            myLog("Exception adding path: "+ex);
+                        }
                     });
                     
                     return out;
