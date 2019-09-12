@@ -123,6 +123,9 @@ public class MapLayout extends Layout implements MapListener {
             //super.addLayoutComponent(value, comp, c);
             comp.putClientProperty(COORD_KEY, (Coord) value);
             comp.putClientProperty(POINT_KEY, null);
+            if (pressed) {
+                installMarkerFor(comp);
+            }
         }
 
         @Override
@@ -134,10 +137,20 @@ public class MapLayout extends Layout implements MapListener {
         }
 
         private Image generateMarkerImage(Component c) {
-            return c.toImage();
+            Image im = c.toImage();
+            if (im == null) {
+                c.setWidth(c.getPreferredW());
+                c.setHeight(c.getPreferredH());
+                im = c.toImage();
+            }
+            return im;
         }
         
         private void installMarkerFor(Component c) {
+            Coord coord = (Coord)c.getClientProperty(COORD_KEY);
+            if (coord == null) {
+                return;
+            }
             MapObject marker = (MapObject)c.getClientProperty(MARKER_KEY);
             if (marker != null) {
                 map.removeMapObject(marker);
@@ -149,7 +162,7 @@ public class MapLayout extends Layout implements MapListener {
             if (im == null) {
                 return;
             }
-            EncodedImage img = EncodedImage.createFromImage(generateMarkerImage(c), false);
+            EncodedImage img = EncodedImage.createFromImage(im, false);
             Float h = (Float)c.getClientProperty(HORIZONTAL_ALIGNMENT);
             if(h == null) {
                 h = 0f;
@@ -158,7 +171,7 @@ public class MapLayout extends Layout implements MapListener {
             if(v == null) {
                 v = 0f;
             }
-            MarkerOptions markerOpts = new MarkerOptions((Coord)c.getClientProperty(COORD_KEY), img)
+            MarkerOptions markerOpts = new MarkerOptions(coord, img)
                     .anchorU(h)
                     .anchorV(v);
             
