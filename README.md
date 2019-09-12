@@ -3,7 +3,7 @@
 Allows [Codename One](https://www.codenameone.com/) developers to embed native Google Maps on iOS/Android or
 fallback to Codename One MapComponent on other platforms.
 Check out a brief tutorial on using this project here:
-http://www.codenameone.com/blog/mapping-natively.html
+https://www.codenameone.com/blog/new-improved-native-google-maps.html
 
 # Limitations
 1. The native maps are only supported on Android devices that have the Google Play store (e.g. not on Amazon Kindle)
