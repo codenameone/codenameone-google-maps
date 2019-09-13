@@ -697,9 +697,10 @@ public class MapContainer extends Container {
      * @param anchorV The vertical alignment of the marker.  0.0 = align top edge with coord. 0.5 = align center.  1.0 = align bottom edge with coord.
      */
     public void addMarker(Component marker, Coord location, float anchorU, float anchorV) {
-        mapLayoutWrapper.add(location, marker);
         MapLayout.setHorizontalAlignment(marker, anchorU);
         MapLayout.setVerticalAlignment(marker, anchorV);
+        mapLayoutWrapper.add(location, marker);
+        
         
     }
     
