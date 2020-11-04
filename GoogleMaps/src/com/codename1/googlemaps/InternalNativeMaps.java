@@ -29,6 +29,7 @@ import com.codename1.ui.PeerComponent;
 public interface InternalNativeMaps extends NativeInterface {
 
     public void setMapType(int type);
+    public void setMapStyle(final String mapStyle);
     public int getMapType();
     public int getMaxZoom();
     public int getMinZoom();
