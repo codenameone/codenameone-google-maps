@@ -51,6 +51,8 @@ import android.graphics.Point;
 import com.codename1.io.Log;
 import com.codename1.ui.Display;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.MapStyleOptions;
+import android.content.res.Resources;
 
 public class InternalNativeMapsImpl implements LifecycleListener {
     private int mapId;
@@ -124,7 +126,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         public void update(View v, final int w, final int h) {
             // prevent potential exception during transitions
             if(w < 10 || h < 10) {
-
                 return;
             }
             final MapView mv = (MapView)v;
@@ -136,24 +137,20 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                 public void run() {
                     //mv.
                     mv.getMapAsync(new OnMapReadyCallback() {
-                                       @Override
-                                       public void onMapReady(GoogleMap googleMap) {
-                                           googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
-                                               public void onSnapshotReady(Bitmap snapshot) {
-                                                   peerImage = snapshot;
-                                                   peerW = w;
-                                                   peerH = h;
-                                                   lastUsed = System.currentTimeMillis();
-                                               }
-                                           });
-                                       }
-                                   });
-
-
+                       @Override
+                       public void onMapReady(GoogleMap googleMap) {
+                           googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+                               public void onSnapshotReady(Bitmap snapshot) {
+                                   peerImage = snapshot;
+                                   peerW = w;
+                                   peerH = h;
+                                   lastUsed = System.currentTimeMillis();
+                               }
+                           });
+                       }
+                   });
                 }
-
             });
-
         }
 
 
@@ -237,7 +234,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                         peerImages.put(view, pe);
                     }
                     pe.update(view, w, h);
-
                 }
             };
             timer.schedule(tt, 1000L);
@@ -301,7 +297,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         currentPath = new PolylineOptions()
                 .color(0xFF000000 | pathStrokeColor)
                 .width(pathStrokeWidth);
-        
         return 1;
     }
 
@@ -319,7 +314,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
         AndroidImplementation.runOnUiThreadAndBlock(new Runnable() {
             public void run() {
                 result[0] = mapInstance.getCameraPosition().zoom;
-
             }
         });
         return result[0];
@@ -778,6 +772,26 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                     view.onPause();
                     view.onResume();
                 } catch (Exception e) {
+                    Log.e(e);
+                }
+            }
+        });
+    }
+
+
+    public void setMapStyle(final String mapStyle){
+        AndroidNativeUtil.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                try {
+                    // Customise the styling of the base map using a JSON object defined
+                    // in a raw resource file.
+                    boolean success = mapInstance.setMapStyle(
+                            new MapStyleOptions(mapStyle));
+
+                    if (!success) {
+                        Log.p("Style parsing failed.");
+                    }
+                } catch (Resources.NotFoundException e) {
                     Log.e(e);
                 }
             }

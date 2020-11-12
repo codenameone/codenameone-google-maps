@@ -688,7 +688,17 @@ public class MapContainer extends Container {
             return this;
         }
     }
-    
+
+    /**
+     * Sets the style of the map.
+     * @param mapStyle The style of map.
+     */
+    public void setMapStyle(final String mapStyle){
+        if(internalNative != null){
+            internalNative.setMapStyle(mapStyle);
+        }
+    }
+
     /**
      * Adds a component as a marker on the map.
      * @param marker The component to be placed on the map.

@@ -110,4 +110,8 @@ public class InternalNativeMapsImpl {
         return 1;
     }
 
+    public void setMapStyle(final String mapStyle){
+
+    }
+
 }

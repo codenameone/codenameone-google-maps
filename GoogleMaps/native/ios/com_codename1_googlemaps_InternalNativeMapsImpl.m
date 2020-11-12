@@ -304,4 +304,17 @@ extern float scaleValue;
 -(int)getPathStrokeWidth {
     return pathStrokeWidth;
 }
+
+-(void)setMapStyle:(NSString*)param{
+    NSError *error;
+
+    // Set the map style by passing a valid JSON string.
+    GMSMapStyle *style = [GMSMapStyle styleWithJSONString:param error:&error];
+
+    if (!style) {
+        NSLog(@"The style definition could not be loaded: %@", error);
+    }
+
+    mapView.mapStyle = style;
+}
 @end
