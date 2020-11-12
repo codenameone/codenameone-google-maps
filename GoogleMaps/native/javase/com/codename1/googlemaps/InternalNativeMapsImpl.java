@@ -129,4 +129,8 @@ public class InternalNativeMapsImpl implements com.codename1.googlemaps.Internal
     public int getPathStrokeWidth() {
         return 1;
     }
+
+    public void setMapStyle(final String mapStyle){
+
+    }
 }

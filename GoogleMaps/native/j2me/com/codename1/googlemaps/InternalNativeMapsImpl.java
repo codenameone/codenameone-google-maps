@@ -125,4 +125,8 @@ public class InternalNativeMapsImpl {
     public int getPathStrokeWidth() {
         return 1;
     }
+
+    public void setMapStyle(final String mapStyle){
+
+    }
 }

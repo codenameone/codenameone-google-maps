@@ -75,5 +75,6 @@ GMSMapView *mapView;
 -(int)getPathStrokeColor;
 -(void)setPathStrokeWidth:(int)param;
 -(int)getPathStrokeWidth;
+-(void)setMapStyle:(NSString*)param;
 
 @end

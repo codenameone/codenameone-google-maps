@@ -51,6 +51,8 @@ import android.graphics.Point;
 import com.codename1.io.Log;
 import com.codename1.ui.Display;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.MapStyleOptions;
+import android.content.res.Resources;
 
 public class InternalNativeMapsImpl implements LifecycleListener {
     private int mapId;
@@ -232,7 +234,6 @@ public class InternalNativeMapsImpl implements LifecycleListener {
                         peerImages.put(view, pe);
                     }
                     pe.update(view, w, h);
-
                 }
             };
             timer.schedule(tt, 1000L);
