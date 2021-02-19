@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="googlemaps-lib-tests-javase-1.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/tests/javase/target/googlemaps-lib-tests-javase-1.0-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

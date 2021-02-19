@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="target1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/compliance-check.jar!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/googlemaps-lib-common-1.0-SNAPSHOT-cn1css.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/googlemaps-lib-common-1.0-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="googlemaps-lib-common" />
+        <module name="googlemaps-lib-ios" />
+        <module name="googlemaps-lib-tests-common" />
+        <module name="googlemaps-lib-javase" />
+        <module name="googlemaps-lib-tests-javase" />
+        <module name="googlemaps-lib-android" />
+        <module name="googlemaps-lib-win" />
+        <module name="googlemaps-lib-javascript" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="googlemaps-lib" target="8" />
+      <module name="googlemaps-lib-android" target="8" />
+      <module name="googlemaps-lib-common" target="8" />
+      <module name="googlemaps-lib-ios" target="8" />
+      <module name="googlemaps-lib-javascript" target="8" />
+      <module name="googlemaps-lib-javase" target="1.8" />
+      <module name="googlemaps-lib-lib" target="1.8" />
+      <module name="googlemaps-lib-tests" target="8" />
+      <module name="googlemaps-lib-tests-common" target="8" />
+      <module name="googlemaps-lib-tests-javase" target="1.8" />
+      <module name="googlemaps-lib-win" target="8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

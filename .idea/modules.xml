@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/GoogleMapsTest/GoogleMapsTest.iml" filepath="$PROJECT_DIR$/GoogleMapsTest/GoogleMapsTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/android/src/android.iml" filepath="$PROJECT_DIR$/GoogleMaps/android/src/android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/common/src/main/build/build.iml" filepath="$PROJECT_DIR$/GoogleMaps/common/src/main/build/build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/codenameone-google-maps.iml" filepath="$PROJECT_DIR$/.idea/codenameone-google-maps.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/javase/javase.iml" filepath="$PROJECT_DIR$/GoogleMaps/javase/javase.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/tests/common/src/main/main.iml" filepath="$PROJECT_DIR$/GoogleMaps/tests/common/src/main/main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/common/src/main/main1.iml" filepath="$PROJECT_DIR$/GoogleMaps/common/src/main/main1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/android/target/target.iml" filepath="$PROJECT_DIR$/GoogleMaps/android/target/target.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/common/src/test/test.iml" filepath="$PROJECT_DIR$/GoogleMaps/common/src/test/test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/tests/common/src/test/test1.iml" filepath="$PROJECT_DIR$/GoogleMaps/tests/common/src/test/test1.iml" />
+    </modules>
+  </component>
+</project>

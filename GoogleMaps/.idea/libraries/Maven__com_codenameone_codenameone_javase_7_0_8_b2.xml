@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.codenameone:codenameone-javase:7.0.8-b2">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/codenameone/codenameone-javase/7.0.8-b2/codenameone-javase-7.0.8-b2.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/codenameone/codenameone-javase/7.0.8-b2/codenameone-javase-7.0.8-b2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/codenameone/codenameone-javase/7.0.8-b2/codenameone-javase-7.0.8-b2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

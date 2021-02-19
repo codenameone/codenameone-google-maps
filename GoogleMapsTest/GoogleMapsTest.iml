@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="target1" level="project" />
+    <orderEntry type="library" name="GoogleMapsTest" level="project" />
+    <orderEntry type="library" name="cn1lib" level="project" />
+    <orderEntry type="library" name="googlemaps-lib-javase-1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="module" module-name="build" />
+    <orderEntry type="module" module-name="main1" />
+    <orderEntry type="module" module-name="android" />
+    <orderEntry type="module" module-name="javase" />
+    <orderEntry type="module" module-name="target" />
+  </component>
+</module>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/googlemaps-lib.iml" filepath="$PROJECT_DIR$/googlemaps-lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/googlemaps-lib-android.iml" filepath="$PROJECT_DIR$/android/googlemaps-lib-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/common/googlemaps-lib-common.iml" filepath="$PROJECT_DIR$/common/googlemaps-lib-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ios/googlemaps-lib-ios.iml" filepath="$PROJECT_DIR$/ios/googlemaps-lib-ios.iml" />
+      <module fileurl="file://$PROJECT_DIR$/javascript/googlemaps-lib-javascript.iml" filepath="$PROJECT_DIR$/javascript/googlemaps-lib-javascript.iml" />
+      <module fileurl="file://$PROJECT_DIR$/javase/googlemaps-lib-javase.iml" filepath="$PROJECT_DIR$/javase/googlemaps-lib-javase.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lib/googlemaps-lib-lib.iml" filepath="$PROJECT_DIR$/lib/googlemaps-lib-lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tests/googlemaps-lib-tests.iml" filepath="$PROJECT_DIR$/tests/googlemaps-lib-tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tests/common/googlemaps-lib-tests-common.iml" filepath="$PROJECT_DIR$/tests/common/googlemaps-lib-tests-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tests/javase/googlemaps-lib-tests-javase.iml" filepath="$PROJECT_DIR$/tests/javase/googlemaps-lib-tests-javase.iml" />
+      <module fileurl="file://$PROJECT_DIR$/win/googlemaps-lib-win.iml" filepath="$PROJECT_DIR$/win/googlemaps-lib-win.iml" />
+    </modules>
+  </component>
+</project>

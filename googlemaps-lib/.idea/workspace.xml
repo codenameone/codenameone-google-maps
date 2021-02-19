@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="5611e47c-ff76-48d6-8f6d-ea1887491f65" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/Stubber.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/build.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/codenameone_library.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/codenameone_library_appended.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/codenameone_library_required.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/codenameone_settings.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/lib/CLDC11.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/lib/CodenameOne.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/lib/CodenameOne_SRC.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/manifest.mf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/manifest.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/android/com/codename1/googlemaps/InternalNativeMapsImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/ios/com_codename1_googlemaps_InternalNativeMapsImpl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/ios/com_codename1_googlemaps_InternalNativeMapsImpl.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/j2me/com/codename1/googlemaps/InternalNativeMapsImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/javascript/com_codename1_googlemaps_InternalNativeMaps.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/javase/com/codename1/googlemaps/InternalNativeMapsImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/rim/com/codename1/googlemaps/InternalNativeMapsImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/win/com/codename1/googlemaps/InternalNativeMapsImpl.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/build-impl.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/genfiles.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/nativej2me.res" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/project.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/project.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com/codename1/googlemaps/InternalNativeMaps.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com/codename1/googlemaps/MapContainer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com/codename1/googlemaps/MapLayout.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com_codename1_googlemaps.cn1mf.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com_codename1_googlemaps_MapContainer.html" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="$APPLICATION_HOME_DIR$/plugins/maven/lib/maven3" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="1oho3yiyWEc3F1FWuEn1LcxI0n6" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5611e47c-ff76-48d6-8f6d-ea1887491f65" name="Default Changelist" comment="" />
+      <created>1613747989155</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1613747989155</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

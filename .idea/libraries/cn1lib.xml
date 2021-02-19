@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="cn1lib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/codenameone/cn1lib/nativese.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/codenameone/cn1lib/css.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/codenameone/cn1lib/main.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/codenameone/cn1lib/nativeand.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/codenameone/cn1lib/nativeios.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/codenameone/cn1lib/nativejavascript.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMaps/common/target/codenameone/cn1lib/nativewin.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

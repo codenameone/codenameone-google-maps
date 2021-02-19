@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="GoogleMapsTest">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/GoogleMapsTest/CodeNameOneBuildClient.jar!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMapsTest/JavaSE.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
