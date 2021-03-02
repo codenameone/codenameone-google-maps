@@ -7,8 +7,8 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>googlemaps-lib</name>
-    <description>Codename One googlemaps-lib library</description>
+    <name>Codename One Google Maps Library</name>
+    <description>Google Maps cn1lib for Codename One apps</description>
     <url>https://www.codenameone.com</url>
 
     <licenses>
@@ -20,23 +20,35 @@
         </license>
     </licenses>
 
-    
-    <!--
-  <distributionManagement>
-      <snapshotRepository>
-        <id>sonatype-nexus-snapshots</id>
-        <name>Sonatype Nexus Snapshots</name>
-        <url>${sonatypeOssDistMgmtSnapshotsUrl}</url>
-      </snapshotRepository>
-      <repository>
-        <id>sonatype-nexus-staging</id>
-        <name>Nexus Release Repository</name>
-        <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-      </repository>
-    </distributionManagement>-->
+
+    <developers>
+        <developer>
+            <id>shai</id>
+            <name>Shai Almog</name>
+            <email>shai.almog@codenameone.com</email>
+            <timezone>+4</timezone>
+        </developer>
+        <developer>
+            <id>chen</id>
+            <name>Chen Fishbein</name>
+            <email>chen.fishbein@codenameone.com</email>
+            <timezone>+4</timezone>
+        </developer>
+        <developer>
+            <id>shannah</id>
+            <name>Steve Hannah</name>
+            <email>steve.hannah@codenameone.com</email>
+            <timezone>-8</timezone>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/codenameone/codenameone-google-maps</url>
+        <connection>scm:git:git@github.com:codenameone/codenameone-google-maps.git</connection>
+    </scm>
 	  
     <properties>
-        <cn1.version>7.0.8-b3-SNAPSHOT</cn1.version>
+        <cn1.version>7.0.8-b5</cn1.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	      
         <java.version>1.8</java.version>
@@ -89,6 +101,22 @@
 
 			
     <build>
+
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+
         <pluginManagement>
             <plugins>
             <plugin>
@@ -144,7 +172,38 @@
     <pluginRepositories>
 
     </pluginRepositories>
-    
-        
+    <profiles>
+        <profile>
+            <id>sign-artifacts</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.4</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <passphrase>${gpg.passphrase}</passphrase>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    <distributionManagement>
+        <repository>
+            <id>nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
 </project>

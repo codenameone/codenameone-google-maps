@@ -11,6 +11,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: com.codenameone:codenameone-core:7.0.8-b2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.codenameone:codenameone-core:7.0.8-b3-SNAPSHOT" level="project" />
   </component>
 </module>
