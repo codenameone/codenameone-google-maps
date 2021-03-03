@@ -12,7 +12,7 @@
     <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>googlemaps-lib-tests</name>
+    <name>googlemaps-tests</name>
     <description>googlemaps-tests-tests</description>
     <url>https://www.codenameone.com</url>
 
