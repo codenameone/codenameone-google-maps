@@ -3,13 +3,13 @@
     
     <parent>
         <groupId>com.codenameone</groupId>
-        <artifactId>googlemaps-lib</artifactId>
-        <version>1.0</version>
+        <artifactId>googlemaps</artifactId>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.codenameone</groupId>
-    <artifactId>googlemaps-lib-common</artifactId>
-    <version>1.0</version>
+    <artifactId>googlemaps-common</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

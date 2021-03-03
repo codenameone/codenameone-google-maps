@@ -3,14 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
       <groupId>com.codenameone</groupId>
-      <artifactId>googlemaps-lib</artifactId>
-      <version>1.0</version>
+      <artifactId>googlemaps</artifactId>
+      <version>1.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.codenameone</groupId>
-  <artifactId>googlemaps-lib-javascript</artifactId>
-  <version>1.0</version>
+  <artifactId>googlemaps-javascript</artifactId>
+  <version>1.0.1-SNAPSHOT</version>
 
-  <name>googlemaps-lib-javascript</name>
+  <name>googlemaps-javascript</name>
   <build>
           <resources>
               <resource>

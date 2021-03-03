@@ -3,14 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
       <groupId>com.codenameone</groupId>
-      <artifactId>googlemaps-lib</artifactId>
-      <version>1.0</version>
+      <artifactId>googlemaps</artifactId>
+      <version>1.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.codenameone</groupId>
-  <artifactId>googlemaps-lib-ios</artifactId>
-  <version>1.0</version>
+  <artifactId>googlemaps-ios</artifactId>
+  <version>1.0.1-SNAPSHOT</version>
 
-  <name>googlemaps-lib-ios</name>
+  <name>googlemaps-ios</name>
   <build>
           <resources>
               <resource>

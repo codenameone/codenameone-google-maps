@@ -2,18 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-    <artifactId>googlemaps-lib</artifactId>
+    <artifactId>googlemaps</artifactId>
     <groupId>com.codenameone</groupId>
-    <version>1.0</version>
+    <version>1.0.1-SNAPSHOT</version>
   </parent>
 
     <groupId>com.codenameone</groupId>
-    <artifactId>googlemaps-lib-tests</artifactId>
-    <version>1.0</version>
+    <artifactId>googlemaps-tests</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>googlemaps-lib-tests-tests</name>
-    <description>googlemaps-lib-tests-tests</description>
+    <name>googlemaps-lib-tests</name>
+    <description>googlemaps-tests-tests</description>
     <url>https://www.codenameone.com</url>
 
     <licenses>
@@ -54,7 +54,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <cn1app.name>googlemaps-lib-tests</cn1app.name>
+        <cn1app.name>googlemaps-tests</cn1app.name>
         
         
         

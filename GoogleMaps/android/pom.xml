@@ -3,14 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
       <groupId>com.codenameone</groupId>
-      <artifactId>googlemaps-lib</artifactId>
-      <version>1.0</version>
+      <artifactId>googlemaps</artifactId>
+      <version>1.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.codenameone</groupId>
-  <artifactId>googlemaps-lib-android</artifactId>
-  <version>1.0</version>
+  <artifactId>googlemaps-android</artifactId>
+  <version>1.0.1-SNAPSHOT</version>
 
-  <name>googlemaps-lib-android</name>
+  <name>googlemaps-android</name>
   <build>
       <sourceDirectory>src/main/dummy</sourceDirectory>
           <resources>

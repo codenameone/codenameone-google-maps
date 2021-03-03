@@ -3,14 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
       <groupId>com.codenameone</groupId>
-      <artifactId>googlemaps-lib</artifactId>
-      <version>1.0</version>
+      <artifactId>googlemaps</artifactId>
+      <version>1.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.codenameone</groupId>
-  <artifactId>googlemaps-lib-win</artifactId>
-  <version>1.0</version>
+  <artifactId>googlemaps-win</artifactId>
+  <version>1.0.1-SNAPSHOT</version>
 
-  <name>googlemaps-lib-win</name>
+  <name>googlemaps-win</name>
   <build>
           <resources>
               <resource>

@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.codenameone</groupId>
-    <artifactId>googlemaps-lib</artifactId>
-    <version>1.0</version>
+    <artifactId>googlemaps</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Codename One Google Maps Library</name>
@@ -48,7 +48,7 @@
     </scm>
 	  
     <properties>
-        <cn1.version>7.0.8-b5</cn1.version>
+        <cn1.version>7.0.8-b6-SNAPSHOT</cn1.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	      
         <java.version>1.8</java.version>
@@ -56,7 +56,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <cn1lib.name>googlemaps-lib</cn1lib.name>
+        <cn1lib.name>googlemaps</cn1lib.name>
         <kotlin.version>1.3.72</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     </properties>
@@ -105,6 +105,28 @@
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>build-javadoc</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                            <phase>post-integration-test</phase>
+                            <configuration>
+                                <quiet>true</quiet>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <source>1.8</source>
+                        <show>protected</show>
+                        <failOnError>false</failOnError>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <executions>
                         <execution>
@@ -115,6 +137,7 @@
                         </execution>
                     </executions>
                 </plugin>
+
             </plugins>
 
         <pluginManagement>
