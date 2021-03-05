@@ -23,36 +23,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5611e47c-ff76-48d6-8f6d-ea1887491f65" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/Stubber.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/build.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/codenameone_library.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/codenameone_library_appended.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/codenameone_library_required.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/codenameone_settings.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/lib/CLDC11.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/lib/CodenameOne.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/lib/CodenameOne_SRC.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/manifest.mf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/manifest.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/android/com/codename1/googlemaps/InternalNativeMapsImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/ios/com_codename1_googlemaps_InternalNativeMapsImpl.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/ios/com_codename1_googlemaps_InternalNativeMapsImpl.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/j2me/com/codename1/googlemaps/InternalNativeMapsImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/javascript/com_codename1_googlemaps_InternalNativeMaps.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/javase/com/codename1/googlemaps/InternalNativeMapsImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/rim/com/codename1/googlemaps/InternalNativeMapsImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/native/win/com/codename1/googlemaps/InternalNativeMapsImpl.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/build-impl.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/genfiles.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/nativej2me.res" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/project.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/nbproject/project.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com/codename1/googlemaps/InternalNativeMaps.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com/codename1/googlemaps/MapContainer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com/codename1/googlemaps/MapLayout.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com_codename1_googlemaps.cn1mf.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GoogleMaps/src/com_codename1_googlemaps_MapContainer.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
