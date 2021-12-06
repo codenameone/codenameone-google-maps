@@ -70,8 +70,8 @@ This project was migrated from an old project on Google code http://code.google.
 
 ## Documentation
 
-. [Javadocs](https://www.javadoc.io/doc/com.codenameone/googlemaps-common/latest/index.html)
-. [Sample Maven Project](https://github.com/shannah/googlemaps-maven-demo)
+- [Javadocs](https://www.javadoc.io/doc/com.codenameone/googlemaps-common/latest/index.html)
+- [Sample Maven Project](https://github.com/shannah/googlemaps-maven-demo)
 
 ## Building From Source
 
