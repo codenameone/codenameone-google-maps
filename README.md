@@ -24,7 +24,7 @@ If you are using Maven as your build tool, then you can simply paste the followi
 <dependency>
   <groupId>com.codenameone</groupId>
   <artifactId>googlemaps-lib</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <type>pom</type>
 </dependency>
 ~~~~
