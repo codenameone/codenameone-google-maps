@@ -4,7 +4,7 @@
 
     <groupId>com.codenameone</groupId>
     <artifactId>googlemaps</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Codename One Google Maps Library</name>
