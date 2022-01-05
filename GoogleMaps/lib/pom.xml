@@ -26,13 +26,7 @@
           <artifactId>${cn1lib.name}-common</artifactId>
           <version>${project.version}</version>
       </dependency>
-      <dependency>
-          <groupId>${project.groupId}</groupId>
-          <artifactId>${cn1lib.name}-common</artifactId>
-          <version>${project.version}</version>
-          <classifier>cn1css</classifier>
-          <type>zip</type>
-      </dependency>
+
 
   </dependencies>
   <profiles>
