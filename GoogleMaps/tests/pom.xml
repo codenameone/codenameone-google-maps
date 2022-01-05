@@ -4,12 +4,12 @@
     <parent>
     <artifactId>googlemaps</artifactId>
     <groupId>com.codenameone</groupId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
   </parent>
 
     <groupId>com.codenameone</groupId>
     <artifactId>googlemaps-tests</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
     <packaging>pom</packaging>
 
     <name>googlemaps-tests</name>
