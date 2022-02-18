@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="Maven: ATTACHED-JAR: com.codename1.test.googlemaps:googlemapstestapp-GoogleMaps:common:1.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/GoogleMapsTest/cn1libs/GoogleMaps/jars/main.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMapsTest/cn1libs/GoogleMaps/jars/nativese.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMapsTest/cn1libs/GoogleMaps/jars/nativeand.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMapsTest/cn1libs/GoogleMaps/jars/nativeios.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMapsTest/cn1libs/GoogleMaps/jars/nativejavascript.zip!/" />
+      <root url="jar://$PROJECT_DIR$/GoogleMapsTest/cn1libs/GoogleMaps/jars/nativewin.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

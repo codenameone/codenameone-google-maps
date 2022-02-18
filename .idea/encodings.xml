@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/GoogleMaps/android/src/main/dummy" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/android/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/android/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/ios/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/ios/src/main/objectivec" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/ios/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/javascript/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/javascript/src/main/javascript" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/javascript/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/javase/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/javase/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/lib/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/lib/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/tests/common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/tests/common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/tests/javase/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/tests/javase/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/tests/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/tests/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/win/src/main/csharp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/win/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMaps/win/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMapsTest/cn1libs/GoogleMaps/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMapsTest/cn1libs/GoogleMaps/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMapsTest/cn1libs/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMapsTest/cn1libs/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMapsTest/common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMapsTest/common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMapsTest/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GoogleMapsTest/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

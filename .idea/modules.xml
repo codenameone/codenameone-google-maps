@@ -2,10 +2,21 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/GoogleMapsTest/GoogleMapsTest.iml" filepath="$PROJECT_DIR$/GoogleMapsTest/GoogleMapsTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/GoogleMaps/android/src/android.iml" filepath="$PROJECT_DIR$/GoogleMaps/android/src/android.iml" />
       <module fileurl="file://$PROJECT_DIR$/GoogleMaps/common/src/main/build/build.iml" filepath="$PROJECT_DIR$/GoogleMaps/common/src/main/build/build.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/codenameone-google-maps.iml" filepath="$PROJECT_DIR$/.idea/codenameone-google-maps.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/googlemaps.iml" filepath="$PROJECT_DIR$/GoogleMaps/googlemaps.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/android/googlemaps-android.iml" filepath="$PROJECT_DIR$/GoogleMaps/android/googlemaps-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/common/googlemaps-common.iml" filepath="$PROJECT_DIR$/GoogleMaps/common/googlemaps-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/ios/googlemaps-ios.iml" filepath="$PROJECT_DIR$/GoogleMaps/ios/googlemaps-ios.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/javascript/googlemaps-javascript.iml" filepath="$PROJECT_DIR$/GoogleMaps/javascript/googlemaps-javascript.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/lib/googlemaps-lib.iml" filepath="$PROJECT_DIR$/GoogleMaps/lib/googlemaps-lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/tests/googlemaps-tests.iml" filepath="$PROJECT_DIR$/GoogleMaps/tests/googlemaps-tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/tests/common/googlemaps-tests-common.iml" filepath="$PROJECT_DIR$/GoogleMaps/tests/common/googlemaps-tests-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/tests/javase/googlemaps-tests-javase.iml" filepath="$PROJECT_DIR$/GoogleMaps/tests/javase/googlemaps-tests-javase.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMaps/win/googlemaps-win.iml" filepath="$PROJECT_DIR$/GoogleMaps/win/googlemaps-win.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMapsTest/googlemapstestapp.iml" filepath="$PROJECT_DIR$/GoogleMapsTest/googlemapstestapp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GoogleMapsTest/common/googlemapstestapp-common.iml" filepath="$PROJECT_DIR$/GoogleMapsTest/common/googlemapstestapp-common.iml" />
       <module fileurl="file://$PROJECT_DIR$/GoogleMaps/javase/javase.iml" filepath="$PROJECT_DIR$/GoogleMaps/javase/javase.iml" />
       <module fileurl="file://$PROJECT_DIR$/GoogleMaps/tests/common/src/main/main.iml" filepath="$PROJECT_DIR$/GoogleMaps/tests/common/src/main/main.iml" />
       <module fileurl="file://$PROJECT_DIR$/GoogleMaps/common/src/main/main1.iml" filepath="$PROJECT_DIR$/GoogleMaps/common/src/main/main1.iml" />

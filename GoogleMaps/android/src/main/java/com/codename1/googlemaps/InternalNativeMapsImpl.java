@@ -18,6 +18,10 @@ package com.codename1.googlemaps;
 
 import android.Manifest;
 
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.MapsInitializer.Renderer;
+import com.google.android.gms.maps.OnMapsSdkInitializedCallback;
+
 import com.codename1.io.Util;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.GoogleMap;
@@ -246,13 +250,36 @@ public class InternalNativeMapsImpl implements LifecycleListener {
     static java.util.ArrayList<PendingUpdate> pendingUpdates = new java.util.ArrayList<PendingUpdate>();
 
 
+    private static class OnMapsSdkInitializedCallback0 implements OnMapsSdkInitializedCallback {
+        @Override
+        public void onMapsSdkInitialized(MapsInitializer.Renderer renderer) {
+            switch (renderer) {
+                case LATEST:
+                    //Log.d("Maps", "The latest version of the renderer is used.");
+                    break;
+                case LEGACY:
+                    //Log.d("Maps", "The legacy version of the renderer is used.");
+                    break;
+            }
+        }
+    }
+
+    private static OnMapsSdkInitializedCallback0 onMapsSdkInitializedCallback = null;
+    private static OnMapsSdkInitializedCallback0 onMapsSdkInitializedCallback() {
+        if (onMapsSdkInitializedCallback == null) {
+            onMapsSdkInitializedCallback = new OnMapsSdkInitializedCallback0();
+        }
+        return onMapsSdkInitializedCallback;
+    }
+
+
     private static boolean initialized = false;
     private static void initMaps() {
         if (!initialized) {
             initialized = true;
             try {
                 // this triggers the creation of the maps so they are ready when the peer component is invoked
-                MapsInitializer.initialize(AndroidNativeUtil.getActivity());
+                MapsInitializer.initialize(AndroidNativeUtil.getActivity(), Renderer.LATEST, onMapsSdkInitializedCallback());
                 MapView v = new MapView(AndroidNativeUtil.getActivity());
 
                 v.onCreate(AndroidNativeUtil.getActivationBundle());

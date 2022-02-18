@@ -50,7 +50,10 @@ within your project:
 javascript.googlemaps.key=YOUR_JAVASCRIPT_API_KEY
 android.xapplication=<meta-data android:name="com.google.android.maps.v2.API_KEY" android:value="YOUR_ANDROID_API_KEY"/>
 ios.afterFinishLaunching=[GMSServices provideAPIKey:@"YOUR_IOS_API_KEY"];
+android.min_sdk_version=19
 ```
+
+*IMPORTANT:* `android.min_sdk_version` must be "19" or higher. 
 
 Make sure to replace the values `YOUR_ANDROID_API_KEY`, `YOUR_IOS_API_KEY``, and YOUR_JAVASCRIPT_API_KEY` with the values you
 obtained from the Google Cloud console by following the instructions for [Android](https://developers.google.com/maps/documentation/android/start)
