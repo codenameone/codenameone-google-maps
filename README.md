@@ -39,37 +39,51 @@ Map component will be used on the simulator as well.
 2. Since a native component is used placing overlays is problematic. You will need to use Dialogs and the API's of the MapContainer class to implement this.
 
 ## Configuration
-The configuration portion is the hardest part, Google made it especially painful in the Google typical way.
-You can follow the instructions from Google to get started for [Android](https://developers.google.com/maps/documentation/android/start), for [iOS](https://developers.google.com/maps/documentation/ios/start/), and
-for [Javascript](https://developers.google.com/maps/documentation/javascript/).  UWP uses https://code.msdn.microsoft.com/windowsapps/Bing-Maps-for-Windows-10-d7ae3e44[BingMaps] instead of Google maps.  
 
-You will need to follow their instructions to generate your map keys. Then define the following build arguments
-within your project:
+This library requires a few build hints in order to work properly.  Most of these are used to set the Google Maps API keys for the various target platforms.  You can use the Codename One Simulator's built-in Built-hint editor to add these build hints.  All you need to do is add an instance of `MapContainer` in your app's source, then launch the simulator.  
 
-```
-javascript.googlemaps.key=YOUR_JAVASCRIPT_API_KEY
-android.xapplication=<meta-data android:name="com.google.android.maps.v2.API_KEY" android:value="YOUR_ANDROID_API_KEY"/>
-ios.afterFinishLaunching=[GMSServices provideAPIKey:@"YOUR_IOS_API_KEY"];
-android.min_sdk_version=19
-```
+In the _Tools_ menu, select _Edit Build Hints..._
 
-*IMPORTANT:* `android.min_sdk_version` must be "19" or higher. 
+![Tools Menu](images/tools-menu.png)
 
-Make sure to replace the values `YOUR_ANDROID_API_KEY`, `YOUR_IOS_API_KEY``, and YOUR_JAVASCRIPT_API_KEY` with the values you
-obtained from the Google Cloud console by following the instructions for [Android](https://developers.google.com/maps/documentation/android/start)
-, for [iOS](https://developers.google.com/maps/documentation/ios/start/), and for [Javascript](https://developers.google.com/maps/documentation/javascript/).
+This will open a _Build Hint Editor_ window as shown below:
 
-NOTE: You can specify the iOS Google Maps version by setting the `var.ios.pods.GoogleMaps.version` build hint, using Cocoapods version syntax.  The default value is currently `~> 3.8`.  If you wish to use a newer version (e.g. `3.8`), then you'll need to set your `ios.pods.platform` build hint to a higher version, as newer versions of GoogleMaps have higher iOS version requirements.  `~> 2.0` requires iOS 8 or higher.  `~> 3.8` requires iOS 9. 
+![Build Hint Editor](images/build-hint-editor.png)
 
-For UWP, you'll need to define the `windows.bingmaps.token` display property inside your app's init() method to your Bing Maps token.  See [instructons on generating a BingMaps token](https://code.msdn.microsoft.com/windowsapps/Bing-Maps-for-Windows-10-d7ae3e44).  E.g.
+**TIP:** If don't see the "Google Maps" tab in your build hint editor, then your app hasn't tried to load a `MapContainer` instance yet.  Close the build hint editor, then navigate to the part of your app where you show a `MapContainer`.  Then open the Build Hint editor again.
 
-```
+
+The build hint editor will include four fields in the _Google Maps_ section:
+
+- Android Minimum SDK Version
+- android.xapplication
+- ios.afterFinishLaunching
+- JavascriptAPI Key
+
+The fields will initially be blank, however, most fields will include an "Example" field just below it that includes some sample content that can be copied and pasted into the corresponding field as a starting point.  Some of the fields (e.g. _ios.afterFinishLaunching_ and _android.xapplication_) include placeholder text that you need to replace with your API key.
+
+#### Obtaining API Keys
+
+Some of the build hints require that you insert your own Google Maps API keys.  The _ios.afterFinishLaunching_ hint includes a placeholder for your iOS key.  The _android.xapplication_ hint includes a placeholder for your Android API key.  The Javascript API key field simply needs to contain your Javascript API key if you want to deploy your app via the Javascript port.
+
+Below each of these fields, you'll see a "Get Key" button.  Each of these will open the associated Google web page with instructions on generating your key.
+
+![Get Key Button](images/get-key.png)
+
+
+#### UWP
+  
+UWP uses [BingMaps](https://code.msdn.microsoft.com/windowsapps/Bing-Maps-for-Windows-10-d7ae3e44) instead of Google maps.  
+
+You'll need to define the `windows.bingmaps.token` display property inside your app's init() method to your Bing Maps token.  See [instructons on generating a BingMaps token](https://code.msdn.microsoft.com/windowsapps/Bing-Maps-for-Windows-10-d7ae3e44).  E.g.
+
+```java
 Display.getInstance().setProperty("windows.bingmaps.token", "xxxxxxxxx");
 ```
 
-NOTE: Version 23 and higher require google play services 9.4.0 or higher, this library will automatically cause your app to build against 9.4.0 or higher.  If you require compatibility with the older version (8.3.0), you'll need to install GoogleMaps.cn1lib v22 or earlier.  You can download v22 [here](https://github.com/codenameone/codenameone-google-maps/releases/tag/v22).
+#### iOS Pod Version
 
-This project was migrated from an old project on Google code http://code.google.com/p/codenameone-google-maps
+You can specify the iOS Google Maps version by setting the `var.ios.pods.GoogleMaps.version` build hint, using Cocoapods version syntax.  The default value is currently `~> 3.8`.  If you wish to use a newer version (e.g. `3.8`), then you'll need to set your `ios.pods.platform` build hint to a higher version, as newer versions of GoogleMaps have higher iOS version requirements.  `~> 2.0` requires iOS 8 or higher.  `~> 3.8` requires iOS 9. 
 
 ## Documentation
 
